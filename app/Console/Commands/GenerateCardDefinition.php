@@ -60,7 +60,9 @@ class GenerateCardDefinition extends Command
             $type
         );
 
-        $path = app_path("Cards/{$type}s/{$className}.php");
+        $pluralType = Str::plural($type);
+
+        $path = app_path("Cards/{$pluralType}/{$className}.php");
         $this->ensureDirectoryExists($path);
         File::put($path, $template);
     }
@@ -107,7 +109,6 @@ PHP;
     protected function getPersonAbilitiesTemplate($name)
     {
         return <<<PHP
-    
     public function getBaseAbilities(): array
     {
         return [new {$name}Ability()];
@@ -123,7 +124,6 @@ PHP;
     protected function getCampAbilitiesTemplate($name)
     {
         return <<<PHP
-    
     public function getBaseAbilities(): array
     {
         return [new {$name}Ability()];
