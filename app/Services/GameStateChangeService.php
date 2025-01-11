@@ -37,6 +37,11 @@ class GameStateChangeService {
         $card->save();
     }
 
+    public function restoreCard(Card $card){
+        $card->is_damaged = false;
+        $card->save();
+    }
+
     public function advanceEventInQueue(Card $event){
 
     }
