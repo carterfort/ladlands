@@ -54,8 +54,9 @@ class GameStateService
     public function applyAbilitiesForCardsInPlay()
     {
         $cardsInPlay = $this->game->cards()->whereIn('location->type', ['BATTLEFIELD'])->get();
+        $cardsState = Card::whereGameId($this->game->id)->get()->groupBy('location.space_id');
 
-        $cardsInPlay->each(function (Card $card) {
+        $cardsInPlay->each(function (Card $card) use ($cardsState) {
             $definition = $card->getDefinition();
             if (!($definition instanceof HasAbilities)) {
                 return;
@@ -75,7 +76,6 @@ class GameStateService
                         continue;
                     }
 
-                    $cardsState = Card::whereGameId($this->game->id)->get()->groupBy('location.space_id');
                     $validSpaces = $this->targetResolver->getValidGameboardSpaces($card->getOwner(), $targetTypes, $cardsState);
 
                     if ($validSpaces->isEmpty()) {
