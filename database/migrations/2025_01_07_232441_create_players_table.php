@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('players', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
-            $table->integer('game_id');
+            $table->foreignId('user_id');
+            $table->foreignId('game_id');
+            $table->index(['user_id', 'game_id']);
             $table->enum('game_seat', ['A', 'One']);
             $table->integer('water', 0);
             $table->timestamps();

@@ -11,23 +11,28 @@ use InvalidArgumentException;
 
 class TargetResolver
 {
-    public function getValidTargets(Player $player, array $targetTypes, $gameCards): Collection
+    public function getValidGameboardSpaces(Player $player, array $targetTypes, $gameCards): Collection
     {
         // Start the query builder for GameBoardSpaces
-        $query = match (true) {
-            in_array(TargetType::OPPONENT, $targetTypes) => $player->getOpponent()->board->spaces(),
-            in_array(TargetType::YOU, $targetTypes) => $player->board->spaces(),
+        $board = match (true) {
+            in_array(TargetType::OPPONENT, $targetTypes) => $player->getOpponent()->board,
+            in_array(TargetType::YOU, $targetTypes) => $player->board,
             default => throw new InvalidArgumentException('Must specify OPPONENT or YOUR_BOARD')
         };
 
-        return $query
-            ->when(in_array(TargetType::EMPTY, $targetTypes), fn($q) => $q->whereNotIn('id', $gameCards->keys()->toArray()))
-            ->when(!in_array(TargetType::EMPTY, $targetTypes), fn($q) => $q->whereIn('id', $gameCards->keys()->toArray()))
-            ->when(in_array(TargetType::UNPROTECTED, $targetTypes), fn($q) => $q->unprotected())
-            ->when(in_array(TargetType::DAMAGED, $targetTypes), fn($q) => $q->damaged())
-            ->when(in_array(TargetType::PERSON, $targetTypes), fn($q) => $q->withCardType('PERSON'))
-            ->when(in_array(TargetType::CAMP, $targetTypes), fn($q) => $q->withCardType('CAMP'))
-            ->pluck('id');
+        $query = $board->spaces();
+
+        if (in_array(TargetType::DAMAGED, $targetTypes)){            
+            $gameCards = $gameCards->filter(function ($item, $key) {
+                return $item[0]['is_damaged'] === 1;
+            });
+        }
+
+        if (in_array(TargetType::UNPROTECTED, $targetTypes)){
+            $query->unprotected($gameCards->keys()->toArray());
+        }
+
+        return $query->get()->pluck('id');
             
     }
 }

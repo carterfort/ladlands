@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('player_input_requests', function (Blueprint $table) {
             $table->id();
-            $table->integer('player_id');
+            $table->foreignId('game_id');
+            $table->foreignId('player_id');
+            $table->index(['game_id', 'player_id']);
             $table->json('valid_targets');
             $table->enum('target_type', ['cards', 'spaces', 'options']);
             $table->string('effect_key');

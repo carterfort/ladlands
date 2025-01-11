@@ -3,22 +3,32 @@
 namespace App\Models;
 
 use App\Abilities\Ability;
+use App\Cards\Camps\CampDefinition;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Cards\CardDefinition;
+use App\Cards\People\PeopleDefinition;
+use App\Cards\People\PersonDefinition;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Card extends Model
 {
     /** @use HasFactory<\Database\Factories\CardFactory> */
     use HasFactory;
 
+    protected $fillable = ['card_definition', 'location'];
+
     protected $casts = [
         'location' => 'object'
     ];
 
+    public function game() : BelongsTo{
+        return $this->belongsTo(Game::class);
+    }
+
     protected ?CardDefinition $definitionInstance = null;
 
-    public function getDefinition(): CardDefinition
+    public function getDefinition(): PersonDefinition|CampDefinition
     {
         if (!$this->definitionInstance) {
             $definitionClass = $this->card_definition;
@@ -35,23 +45,5 @@ class Card extends Model
     public function getDescription(): string 
     {
         return $this->getDefinition()->description;
-    }
-
-    public function getWaterCost(): int 
-    {
-        return $this->getDefinition()->waterCost;
-    }
-
-    public function getAvailableAbilities(): array 
-    {
-        if ($this->face_down || !$this->is_ready) {
-            return [];
-        }
-        return $this->getDefinition()->abilities;
-    }
-
-    public function getJunkAbility(): Ability
-    {
-        return $this->getDefinition()->junkAbility;
     }
 }

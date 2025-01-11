@@ -2,31 +2,39 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GameBoardSpace extends Model
 {
-    /** @use HasFactory<\Database\Factories\GameBoardSpaceFactory> */
+    /** @use HasFactory<\Database\Factories\GameBoardFactory> */
     use HasFactory;
 
-    protected $casts = [
-        'battlefield_position' => 'array'
-    ];
+    public $timestamps = false;
 
-    public function scopeUnprotected($query)
-    {
-        return $query->whereNotExists(function ($q) {
-            $q->select('game_board_spaces.id')
-                ->from('game_board_spaces as above')
-                ->join('cards', function ($join) {
-                    $join->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(cards.location, "$.space_id")) = above.id')
-                    ->where('cards.is_destroyed', false);
-                })
-                ->where('above.game_board_id', DB::raw('game_board_spaces.game_board_id'))
-                ->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(above.battlefield_position, "$[1]")) = JSON_UNQUOTE(JSON_EXTRACT(game_board_spaces.battlefield_position, "$[1]")) - 1')
-                ->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(above.battlefield_position, "$[0]")) = JSON_UNQUOTE(JSON_EXTRACT(game_board_spaces.battlefield_position, "$[0]"))');
-        });
+    public function board(): BelongsTo {
+        return $this->belongsTo(GameBoard::class);
+    }
+
+    public function scopeType(Builder $query, $type){
+        $query->whereType($type);
+    }
+
+    public function scopeUnprotected(Builder $query, $occupiedSpaceIds){
+
+        $placeholders = implode(',', array_fill(0, count($occupiedSpaceIds), '?'));
+        if ($placeholders == ""){
+            $query->where('game_board_id', '<', 0);
+            return;
+        }
+        $query->type("BATTLEFIELD")
+            ->whereIn('id', $occupiedSpaceIds)
+            ->selectRaw('id, position, (position % 3) as column_index')
+            ->whereRaw('position = (SELECT MIN(position) 
+                     FROM game_board_spaces AS inner_spaces 
+                     WHERE inner_spaces.id IN ('.$placeholders.') 
+                     AND (inner_spaces.position % 3) = (game_board_spaces.position % 3))', [$occupiedSpaceIds]);
     }
 }

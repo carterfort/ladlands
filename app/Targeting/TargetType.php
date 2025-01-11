@@ -15,4 +15,6 @@ enum TargetType
     case DAMAGED;
     case EMPTY;
     case ANY_CARD;
+    case BATTLEFIELD;
+    case SPACE;
 }

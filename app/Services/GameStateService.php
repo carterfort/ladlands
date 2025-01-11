@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Abilities\Ability;
+use App\Cards\HasAbilities;
 use App\Models\{Game, Player, Card, GameBoard, GameBoardSpace};
 use App\Targeting\TargetResolver;
 use Illuminate\Support\Collection;
@@ -11,57 +12,41 @@ class GameStateService
 {
 
     protected Game $game;
+    protected Collection $abilities;
 
     public function __construct(
         private readonly CardLocationManager $locationManager,
         public readonly GameStateChangeService $stateChanger,
         public readonly TargetResolver $targetResolver,
-    ) {}
+    ) {
+        $this->abilities = collect([]);
+    }
 
     public function setGame(Game $game){
         $this->game = $game;
     }
 
-    public function getStateForPlayer(Player $player): array
-    {
-        $playerBoard = GameBoard::wherePlayerId($player->id)->whereGameId($this->game->id)->first();
-        $opponent = $this->getOpponentForPlayer($this->game, $player);
-        $opponentBoard = GameBoard::wherePlayerId($opponent->id)->whereGameId($this->game->id)->first();
-
-        return [];
-
-        // To be implemented 
-
-        // return [
-        //     'player' => [
-        //         'id' => $player->id,
-        //         'water' => $player->water,
-        //         'hand' => $this->getPlayerHand($this->game, $player),
-        //         'board' => $this->getBoardState($playerBoard)
-        //     ],
-        //     'opponent' => [
-        //         'id' => $opponent->id,
-        //         'water' => $opponent->water,
-        //         'hand_size' => $this->getHandSize($this->game, $opponent),
-        //         'board' => $this->getBoardState($opponentBoard)
-        //     ],
-        //     'game' => [
-        //         'id' => $this->game->id,
-        //         'current_player_id' => $this->game->current_player_id,
-        //         'status' => $this->game->status,
-        //         'punk_deck_size' => $this->getDeckSize($this->game, 'PUNK_DECK'),
-        //         'discard_deck_size' => $this->getDeckSize($this->game, 'DISCARD_DECK')
-        //     ],
-        //     'pending_input_requests' => $this->getPendingInputRequests($this->game, $player)
-        // ];
+    public function putCardInSpace(Card $card, GameBoardSpace $space){
+        $card->location = [
+            'space_id' => $space->id,
+            'type' => 'BATTLEFIELD'
+        ];
+        $card->save();
     }
 
-    private function getOpponentForPlayer(Game $game, Player $player){
-        if ($game->playerA->id == $player->id){
-            return $game->playerOne;
-        }
+    public function applyAbilitiesForCardsInPlay(){
 
-        return $game->playerA;
+        $cardsInPlay = $this->game->cards()->whereIn('location->type',['BATTLEFIELD'])->get();
+        $cardsInPlay->each(function(Card $card){
+            $definition = $card->getDefinition();
+            if ($definition instanceof HasAbilities) {
+                $this->abilities[$card->id] = $definition->getBaseAbilities();
+            }
+        });
+    }
+
+    public function getAbilitiesForCard(Card $card){
+        return $this->abilities->get($card->id) ?? [];
     }
 
     public function getValidTargetsForAbility(
@@ -69,7 +54,9 @@ class GameStateService
         Player $player
     ): Collection {
         $targetTypes = $ability->targetTypes;
-        return $this->targetResolver->getValidTargets($player, $targetTypes, Card::whereGameId($this->game->id)->get()->groupBy('location.space_id'));
+
+        $cardsState = Card::whereGameId($this->game->id)->get()->groupBy('location.space_id');
+        return $this->targetResolver->getValidGameboardSpaces($player, $targetTypes, $cardsState);
     }
 
     private function getDeckSize(Game $game, string $deckType): int
@@ -93,4 +80,5 @@ class GameStateService
                 'source_card_id' => $request->source_card_id
             ]);
     }
+
 }

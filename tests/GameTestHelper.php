@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use App\Models\{Game, Player, GameBoard, GameBoardSpace, Card};
+use App\Models\{Game, Player, GameBoard, GameBoardSpace, Card, CardContainer};
 
 trait GameTestHelper
 {
@@ -35,18 +35,30 @@ trait GameTestHelper
             'player_id' => $playerB->id
         ]);
 
-        for ($row = 0; $row < 3; $row++) {
-            for ($col = 0; $col < 3; $col++) {
-                GameBoardSpace::factory()->create([
-                    'game_board_id' => $boardA->id,
-                    'battlefield_position' => [$col, $row]
-                ]);
-                GameBoardSpace::factory()->create([
-                    'game_board_id' => $boardB->id,
-                    'battlefield_position' => [$col, $row]
-                ]);
+        collect([$boardA, $boardB])->each(function(GameBoard $board){
+            for ($fieldSpace = 0; $fieldSpace < 9; $fieldSpace++) {
+                $space = new GameBoardSpace();
+                $space->game_board_id = $board->id;
+                $space->type = "BATTLEFIELD";
+                $space->position = $fieldSpace;
+                $space->save();
             }
-        }
+            for ($i = 0; $i < 3; $i++){
+                $space = new GameBoardSpace();
+                $space->game_board_id = $board->id;
+                $space->type = "EVENT";
+                $space->position = $i;
+                $space->save();
+            }
+            for ($i = 0; $i < 2; $i++) {
+                $space = new GameBoardSpace();
+                $space->game_board_id = $board->id;
+                $space->type = "PERMA";
+                $space->position = $i;
+                $space->save();
+            }
+        });
+
 
         return [
             'game' => $game,
@@ -59,6 +71,7 @@ trait GameTestHelper
 
     protected function placeCardOnBoard(GameBoard $board, $cardDefinition, array $position): Card
     {
+
         $space = $board->spaces()->whereJsonContains('battlefield_position', $position)->first();
 
         $card = Card::factory()->create([

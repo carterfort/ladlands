@@ -20,7 +20,7 @@ class GameController extends Controller
         $service->setGame($game);
 
         return response()->json(
-            $service->getStateForPlayer($player)
+            ['cards' => []]
         );
     }
 }

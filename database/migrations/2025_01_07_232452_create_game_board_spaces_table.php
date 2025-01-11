@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('game_board_spaces', function (Blueprint $table) {
             $table->id();
-            $table->integer('game_board_id');
-            $table->json('battlefield_position');
+            $table->foreignId('game_board_id')->index();
+            $table->integer('position');
             $table->enum('type', ['BATTLEFIELD', 'PERMA', 'EVENT']);
-            $table->timestamps();
         });
     }
 

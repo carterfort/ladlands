@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('cards', function (Blueprint $table) {
             $table->id('id');
-            $table->integer('game_id');
+            $table->foreignId('game_id')->index();
             $table->string('card_definition');
+            $table->json('location');
             $table->boolean('is_damaged')->default(false);
             $table->boolean('is_ready')->default(true);
             $table->boolean('face_down')->default(false);
             $table->boolean('flipped')->default(false);
             $table->boolean('is_destroyed')->default(false);
-            $table->json('location');
             $table->timestamps();
         });
     }

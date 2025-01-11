@@ -3,18 +3,16 @@
 namespace App\Cards\People;
 
 use App\Abilities\DamageAbility;
-use App\Cards\CardDefinition;
 
-class LooterDefinition extends CardDefinition {
+class LooterDefinition extends PersonDefinition {
 
     public string $title = 'Looter';
     public string $description = 'Freeeeeddooooooomm!!!';
     public int $waterCost = 1;
-    public string $type = "Person";
 
-    public function registerAbilities(): void
+    public function getBaseAbilities(): array
     {
-        $this->abilities[] = new DamageAbility(2);
+        return [new DamageAbility(2)];
     }
 
     public function registerJunkAbility(): void

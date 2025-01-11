@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('game_boards', function (Blueprint $table) {
             $table->id();
-            $table->integer('game_id');
-            $table->integer('player_id');
-            $table->timestamps();
+            $table->foreignId('game_id');
+            $table->foreignId('player_id');
         });
     }
 
