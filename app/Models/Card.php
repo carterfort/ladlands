@@ -53,6 +53,10 @@ class Card extends Model
         }
     }
 
+    public function scopeName($query, $name){
+        $query->where('card_definition', 'LIKE', $name.'Definition');
+    }
+
     protected ?CardDefinition $definitionInstance = null;
 
     public function getDefinition(): PersonDefinition|CampDefinition
