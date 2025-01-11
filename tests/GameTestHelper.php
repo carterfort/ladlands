@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Models\{Game, Player, GameBoard, GameBoardSpace, Card, CardContainer};
+use App\Services\GameStateService;
 
 trait GameTestHelper
 {
@@ -86,26 +87,5 @@ trait GameTestHelper
         
 
         return $card;
-    }
-
-    protected function isProtected(GameBoardSpace $space): bool
-    {
-        $card = Card::where('location->type', 'BOARD_SPACE')->where('location->space_id', $space->id)->first();
-
-        if (!$card) {
-            return false;
-        }
-
-        $row = floor($space->position / 3);
-        if ($row === 0) {
-            return false;
-        }
-
-        $col = $space->position % 3;
-        $frontSpace = $space->board->spaces()
-            ->where('position', ($row - 1) * 3 + $col)
-            ->first();
-
-        return $frontSpace && $card && !$card->is_destroyed;
     }
 }
