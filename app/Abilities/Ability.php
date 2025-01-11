@@ -8,7 +8,7 @@ abstract class Ability {
         public string $title,
         public string $description,
         public int $cost,
-        public array $targetTypes,
+        public array $targetTypes = [],
         public string $effectClass
     ) {}
 }
