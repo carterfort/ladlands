@@ -1,17 +1,18 @@
 <?php
 
-namespace App\Cards\Camps;
+namespace App\Abilities;
 
-use App\Abilities\AtomicGardenAbility;
+use App\Effects\AtomicGardenEffect;
 
-class AtomicGardenDefinition extends CampDefinition
+class AtomicGardenAbility extends Ability
 {
-    public string $title = 'Atomic Garden';
-    public string $description = 'Restore your damaged people';
-    public int $drawCount = 1;
-
-    public function getBaseAbilities(): array
+    public function __construct()
     {
-        return [new AtomicGardenAbility()];
+        parent::__construct(
+            $title = "Atomic Growth",
+            $description = "Restore a damaged person. They become ready",
+            $cost = 2,
+            $effectClasses = [AtomicGardenEffect::class]
+        );
     }
 }
