@@ -5,7 +5,7 @@ namespace App\Effects;
 use App\Models\PlayerInputRequest;
 use App\Services\GameStateService;
 
-class GunnerEffect extends Effect
+class GunnerEffect implements Effect
 {
     public function __construct(
             public readonly string $title = "Spray and Pray",
@@ -15,7 +15,8 @@ class GunnerEffect extends Effect
     public function applyWithInput(GameStateService $state, PlayerInputRequest $request): void 
     {
         // Get all unprotected enemy cards in play
-        $enemyCards = $request->owningPlayer->getOpponent()->board->spaces()->unprotected()->get();
+        $enemyCards = $request->owningPlayer->getOpponent()
+                    ->board->spaces()->unprotected()->get();
 
         // Apply injure effect to each valid target
         foreach ($enemyCards as $card) {
