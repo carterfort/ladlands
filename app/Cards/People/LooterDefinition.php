@@ -3,6 +3,7 @@
 namespace App\Cards\People;
 
 use App\Abilities\DamageAbility;
+use App\Abilities\LootAbility;
 
 class LooterDefinition extends PersonDefinition {
 
@@ -12,7 +13,7 @@ class LooterDefinition extends PersonDefinition {
 
     public function getBaseAbilities(): array
     {
-        return [new DamageAbility(2)];
+        return [new LootAbility()];
     }
 
     public function registerJunkAbility(): void

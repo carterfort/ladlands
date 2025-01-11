@@ -2,7 +2,6 @@
 
 namespace App\Cards\Camps;
 
-use App\Abilities\DamageAbility;
 use App\Abilities\ResonatorAbility;
 
 class ResonatorDefinition extends CampDefinition
