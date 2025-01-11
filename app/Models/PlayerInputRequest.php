@@ -23,4 +23,8 @@ class PlayerInputRequest extends Model
     public function owningPlayer(): BelongsTo {
         return $this->belongsTo(Player::class, 'player_id');
     }
+
+    public function sourceCard(): BelongsTo {
+        return $this->belongsTo(Card::class);
+    }
 }

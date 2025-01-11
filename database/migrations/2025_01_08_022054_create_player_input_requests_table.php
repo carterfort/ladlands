@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('game_id');
             $table->foreignId('player_id');
             $table->index(['game_id', 'player_id']);
+            $table->foreignId('source_card_id')->nullable();
             $table->json('valid_targets');
             $table->json('selected_targets');
             $table->enum('target_type', ['cards', 'spaces', 'options']);
