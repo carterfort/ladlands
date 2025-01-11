@@ -24,7 +24,7 @@ class TargetResolver
 
         if (in_array(TargetType::DAMAGED, $targetTypes)){            
             $gameCards = $gameCards->filter(function ($item, $key) {
-                return $item[0]['is_damaged'] === 1;
+                return $item[0]['is_damaged'] === true;
             });
         }
 
