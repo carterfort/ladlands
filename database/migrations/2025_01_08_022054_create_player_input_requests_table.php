@@ -17,9 +17,10 @@ return new class extends Migration
             $table->foreignId('player_id');
             $table->index(['game_id', 'player_id']);
             $table->json('valid_targets');
+            $table->json('selected_targets');
             $table->enum('target_type', ['cards', 'spaces', 'options']);
             $table->string('effect_key');
-            $table->boolean('completed', false);
+            $table->boolean('completed')->default(false);
             $table->timestamps();
         });
     }
