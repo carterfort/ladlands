@@ -42,7 +42,7 @@ class GameStateChangeService {
     }
 
     public function drawCardsForPlayer(Player $player, int $count){
-        $cards = $this->game->punkDeck->take($count);
+        $cards = $player->game->cards()->punkDeck()->take($count);
         $location = ['type' => 'player_hand', 'player_id' => $player->id];
         $cards->update(['location' => $location]);
     }

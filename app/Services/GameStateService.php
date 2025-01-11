@@ -4,7 +4,8 @@ namespace App\Services;
 
 use App\Abilities\Ability;
 use App\Cards\HasAbilities;
-use App\Models\{Game, Player, Card, GameBoard, GameBoardSpace};
+use App\Effects\InputDependentEffect;
+use App\Models\{Game, Player, Card, PlayerInputRequest};
 use App\Targeting\TargetResolver;
 use Illuminate\Support\Collection;
 
@@ -15,7 +16,8 @@ class GameStateService
     protected Collection $abilities;
 
     public function __construct(
-        private readonly CardLocationManager $locationManager,
+        private readonly DeckBuildingService $deckBuilder,
+        private readonly AbilityHandlerService $abilityHandler,
         public readonly GameStateChangeService $stateChanger,
         public readonly TargetResolver $targetResolver,
     ) {
@@ -24,6 +26,26 @@ class GameStateService
 
     public function setGame(Game $game){
         $this->game = $game;
+    }
+
+    public function buildDecks(){
+        $this->deckBuilder->buildDecks($this->game);
+    }
+
+    public function getGameCardsQuery(){
+        return $this->game->cards();
+    }
+
+    public function handleInputRequestResponse(PlayerInputRequest $request): void {
+        
+        // Will we want to add logging here? Or is that in the StateChangeService?
+
+        $effect = app('effects')->get($request->effect_key);
+        $implements = collect(class_implements($effect));
+        when(
+            $implements->contains(InputDependentEffect::class),
+                fn() => $effect->applyWithInput($this, $request)
+        );
     }
 
     public function applyAbilitiesForCardsInPlay(){
@@ -71,6 +93,17 @@ class GameStateService
                 'required_target_count' => $request->required_target_count,
                 'source_card_id' => $request->source_card_id
             ]);
+    }
+
+    public function playerActivatesAbilityViaCard(Player $player, Ability $ability, Card $card){
+        // Check to see if the player can activate this ability
+
+        // Validate that this card can activate this ability in the current game state
+        
+        // Delegate handling
+        $this->abilityHandler->activateAbilityByPlayer($this, $ability, $player);
+
+        // Resolve anything else?
     }
 
 }
