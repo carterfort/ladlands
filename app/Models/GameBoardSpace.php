@@ -15,7 +15,7 @@ class GameBoardSpace extends Model
     public $timestamps = false;
 
     public function board(): BelongsTo {
-        return $this->belongsTo(GameBoard::class);
+        return $this->belongsTo(GameBoard::class, 'game_board_id');
     }
 
     public function scopeType(Builder $query, $type){

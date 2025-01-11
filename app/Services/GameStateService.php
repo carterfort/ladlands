@@ -51,14 +51,46 @@ class GameStateService
         }
 
     }
+    public function applyAbilitiesForCardsInPlay()
+    {
+        $cardsInPlay = $this->game->cards()->whereIn('location->type', ['BATTLEFIELD'])->get();
 
-    public function applyAbilitiesForCardsInPlay(){
-
-        $cardsInPlay = $this->game->cards()->whereIn('location->type',['BATTLEFIELD'])->get();
-        $cardsInPlay->each(function(Card $card){
+        $cardsInPlay->each(function (Card $card) {
             $definition = $card->getDefinition();
-            if ($definition instanceof HasAbilities) {
-                $this->abilities[$card->id] = $definition->getBaseAbilities();
+            if (!($definition instanceof HasAbilities)) {
+                return;
+            }
+
+            $baseAbilities = $definition->getBaseAbilities();
+            $validatedAbilities = [];
+
+            foreach ($baseAbilities as $ability) {
+                $effects = app('effects')->get($ability->effectClasses);
+                $hasValidTargets = true;
+
+                // Check each effect has valid targets
+                foreach ($effects as $effect) {
+                    $targetTypes = $effect->getTargetingRequirements();
+                    if (empty($targetTypes)) {
+                        continue;
+                    }
+
+                    $cardsState = Card::whereGameId($this->game->id)->get()->groupBy('location.space_id');
+                    $validSpaces = $this->targetResolver->getValidGameboardSpaces($card->getOwner(), $targetTypes, $cardsState);
+
+                    if ($validSpaces->isEmpty()) {
+                        $hasValidTargets = false;
+                        break;
+                    }
+                }
+
+                if ($hasValidTargets) {
+                    $validatedAbilities[] = $ability;
+                }
+            }
+
+            if (!empty($validatedAbilities)) {
+                $this->abilities[$card->id] = $validatedAbilities;
             }
         });
     }

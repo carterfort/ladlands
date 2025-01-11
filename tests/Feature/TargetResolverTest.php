@@ -76,21 +76,19 @@ class TargetResolverTest extends TestCase
 
         $this->gameState->applyAbilitiesForCardsInPlay();
 
-        $resonatorAbility = $this->gameState->getAbilitiesForCard($resonator)[0];
-        // There should be no valid targets because the Looter isn't damaged
+        $resonatorAbilities = $this->gameState->getAbilitiesForCard($resonator);
+        // This ability shouldn't exist on the game state because there are no valid targets
 
-        $validTargets = $this->gameState->getValidTargetsForAbility(
-            $resonatorAbility,
-            $this->testData['playerA']
-        )["App\Effects\ResonatorEffect"];
-
-        $this->assertCount(0, $validTargets);
+        $this->assertCount(0, $resonatorAbilities);
 
         $this->gameState->stateChanger->damageCard($looter);
+        $this->gameState->applyAbilitiesForCardsInPlay();
+
+        $resonatorAbilities = $this->gameState->getAbilitiesForCard($resonator);
 
         // There should be a valid target, and it should be the space with the looter in it
         $validTargets = $this->gameState->getValidTargetsForAbility(
-            $resonatorAbility,
+            $resonatorAbilities[0],
             $this->testData['playerA']
         )["App\Effects\ResonatorEffect"];
 

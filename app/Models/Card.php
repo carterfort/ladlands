@@ -43,6 +43,16 @@ class Card extends Model
         $query->where('location->type', 'camp_deck');
     }
 
+    public function getOwner(){
+        if ($this->location->type == 'player_hand'){
+            return Player::find($this->location->player_id);
+        }
+
+        if ($this->location->space_id != null){
+            return GameBoardSpace::find($this->location->space_id)->board->player;
+        }
+    }
+
     protected ?CardDefinition $definitionInstance = null;
 
     public function getDefinition(): PersonDefinition|CampDefinition

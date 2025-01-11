@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
@@ -20,6 +21,10 @@ class GameBoard extends Model
 
     public function battlefield(): HasMany{
         return $this->spaces()->type('BATTLEFIELD');
+    }
+
+    public function player(): BelongsTo {
+        return $this->belongsTo(Player::class);
     }
 
     public function unprotectedSpaces($occupiedSpaceIds)
