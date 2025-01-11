@@ -23,9 +23,16 @@ class EffectsServiceProvider extends ServiceProvider
                     $this->effects[$key] = $effect;
                 }
 
-                public function get($key)
+                public function get($keys)
                 {
-                    return $this->effects[$key] ?? null;
+                    if (!is_array($keys)){
+                        $keys = [$keys];
+                    }
+                    $effects = [];
+                    foreach($keys as $key){
+                        $effects[] = $this->effects[$key] ?? null;
+                    }
+                    return $effects;
                 }
 
                 public function all()

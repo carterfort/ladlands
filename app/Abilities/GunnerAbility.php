@@ -12,7 +12,7 @@ class GunnerAbility extends Ability
             $title = "Gunner",
             $description = "Description for Gunner ability",
             $cost = 1,
-            $effect = GunnerEffect::class
+            $effectClasses = [GunnerEffect::class]
         );
     }
 }

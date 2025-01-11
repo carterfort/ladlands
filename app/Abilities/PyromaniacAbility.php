@@ -12,7 +12,7 @@ class PyromaniacAbility extends Ability
             $title = "Ignite",
             $description = "Set fire to an unprotected enemy camp",
             $cost = 1,
-            $effectClass = PyromaniacEffect::class
+            $effectClasses = [PyromaniacEffect::class]
         );
     }
 }

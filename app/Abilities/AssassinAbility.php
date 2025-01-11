@@ -12,7 +12,7 @@ class AssassinAbility extends Ability
             $title = "Assassinate",
             $description = "Destroy an unprotected person",
             $cost = 2,
-            $effectClass = AssassinEffect::class
+            $effectClasses = [AssassinEffect::class]
         );
     }
 }

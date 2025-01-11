@@ -12,14 +12,19 @@ class AbilityHandlerService{
 
     public function activateAbilityByPlayer(GameStateService $gameState, Ability $ability, Player $player){
         
-        $effect = app('effects')->get($ability->effectClass);
-        $interfaces = collect(class_implements($effect));
+        $effects = app('effects')->get($ability->effectClasses);
 
-        when ($interfaces->contains(ApplyToPlayerImmediatelyEffect::class), 
-            fn() => $effect->apply($gameState, $player),
-        $interfaces->contains(InputDependentEffect::class),
-            fn() => $this->createPlayerInputRequestForEffect($gameState, $player, $effect)
-        );
+        foreach ($effects as $effect){
+            $interfaces = collect(class_implements($effect));
+
+            when(
+                $interfaces->contains(ApplyToPlayerImmediatelyEffect::class),
+                fn() => $effect->apply($gameState, $player),
+                $interfaces->contains(InputDependentEffect::class),
+                fn() => $this->createPlayerInputRequestForEffect($gameState, $player, $effect)
+            );
+        }
+
 
     }
 

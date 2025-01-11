@@ -7,6 +7,7 @@ use App\Targeting\TargetResolver;
 use App\Cards\Camps\{ResonatorDefinition};
 use App\Cards\People\{LooterDefinition};
 use App\Abilities\{DamageAbility};
+use App\Effects\DamageEffect;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Tests\GameTestHelper;
@@ -42,7 +43,7 @@ class TargetResolverTest extends TestCase
         $validTargets = $this->gameState->getValidTargetsForAbility(
             $damageAbility, 
             $this->testData['playerA']
-        );
+        )[DamageEffect::class];
 
         // Guard should be targetable as it's in front row
         $this->assertContains($looter->location->space_id, $validTargets->toArray());
@@ -55,7 +56,7 @@ class TargetResolverTest extends TestCase
         $validTargets = $this->gameState->getValidTargetsForAbility(
             $damageAbility,
             $this->testData['playerA']
-        );
+        )[DamageEffect::class];
 
         $this->assertNotContains($looter->location->space_id, $validTargets->toArray());
     }
@@ -81,7 +82,7 @@ class TargetResolverTest extends TestCase
         $validTargets = $this->gameState->getValidTargetsForAbility(
             $resonatorAbility,
             $this->testData['playerA']
-        );
+        )["App\Effects\ResonatorEffect"];
 
         $this->assertCount(0, $validTargets);
 
@@ -91,7 +92,7 @@ class TargetResolverTest extends TestCase
         $validTargets = $this->gameState->getValidTargetsForAbility(
             $resonatorAbility,
             $this->testData['playerA']
-        );
+        )["App\Effects\ResonatorEffect"];
 
         $this->assertCount(1, $validTargets);
         

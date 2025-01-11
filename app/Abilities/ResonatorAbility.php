@@ -12,8 +12,8 @@ class ResonatorAbility extends Ability
         parent::__construct(
             $title = "Sound the alarm!!!",
             $description = "Destroy an unprotected, damaged card",
-            $cost = $cost,
-            $effectClass = ResonatorEffect::class
+            $cost = 2,
+            $effectClasses = [ResonatorEffect::class]
         );
     }
 }

@@ -8,6 +8,6 @@ abstract class Ability {
         public string $title,
         public string $description,
         public int $cost,
-        public string $effectClass
+        public array $effectClasses
     ) {}
 }

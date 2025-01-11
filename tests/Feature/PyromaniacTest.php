@@ -6,6 +6,7 @@ use App\Cards\Camps\ResonatorDefinition;
 use App\Services\GameStateService;
 use App\Targeting\TargetResolver;
 use App\Cards\People\PyromaniacDefinition;
+use App\Effects\PyromaniacEffect;
 use App\Models\PlayerInputRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -52,7 +53,7 @@ class PyromaniacTest extends TestCase
         $validTargets = $this->gameState->getValidTargetsForAbility(
             $igniteAbility,
             $this->testData['playerA']
-        );
+        )[PyromaniacEffect::class];
         $this->assertContains($camp->location->space_id, $validTargets->toArray());
 
         // Create a protected camp
@@ -65,7 +66,7 @@ class PyromaniacTest extends TestCase
         $validTargets = $this->gameState->getValidTargetsForAbility(
             $igniteAbility,
             $this->testData['playerA']
-        );
+        )[PyromaniacEffect::class];
         $this->assertNotContains($protectedCamp->location->space_id, $validTargets->toArray());
     }
 
@@ -93,7 +94,7 @@ class PyromaniacTest extends TestCase
         $request->selected_targets = [$camp->location->space_id];
 
         // Apply the ignite effect
-        $effect = app('effects')->get($igniteAbility->effectClass);
+        $effect = app('effects')->get($igniteAbility->effectClasses)[0];
         $effect->applyWithInput($this->gameState, $request);
 
         // Verify the camp is damaged

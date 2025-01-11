@@ -12,7 +12,7 @@ class ExterminatorAbility extends Ability
             $title = "Exterminator",
             $description = "Destroy all damaged enemies",
             $cost = 2,
-            $effectClass = ExterminatorEffect::class
+            $effectClasses = [ExterminatorEffect::class]
         );
     }
 }

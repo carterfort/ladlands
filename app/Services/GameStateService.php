@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Abilities\Ability;
 use App\Cards\HasAbilities;
+use App\Effects\Effect;
 use App\Effects\InputDependentEffect;
 use App\Models\{Game, Player, Card, PlayerInputRequest};
 use App\Targeting\TargetResolver;
@@ -40,12 +41,15 @@ class GameStateService
         
         // Will we want to add logging here? Or is that in the StateChangeService?
 
-        $effect = app('effects')->get($request->effect_key);
-        $implements = collect(class_implements($effect));
-        when(
-            $implements->contains(InputDependentEffect::class),
+        $effects = app('effects')->get($request->effect_key);
+        foreach($effects as $effect){
+            $implements = collect(class_implements($effect));
+            when(
+                $implements->contains(InputDependentEffect::class),
                 fn() => $effect->applyWithInput($this, $request)
-        );
+            );
+        }
+
     }
 
     public function applyAbilitiesForCardsInPlay(){
@@ -67,10 +71,16 @@ class GameStateService
         Ability $ability,
         Player $player
     ): Collection {
-        $targetTypes = app('effects')->get($ability->effectClass)->getTargetingRequirements();
+        $effects = app('effects')->get($ability->effectClasses);
+        
+        $validSpaces = collect([]);
+        foreach ($effects as $effect){
+            $targetTypes = $effect->getTargetingRequirements();
+            $cardsState = Card::whereGameId($this->game->id)->get()->groupBy('location.space_id');
+            $validSpaces[$effect::class] = $this->targetResolver->getValidGameboardSpaces($player, $targetTypes, $cardsState);
+        }
 
-        $cardsState = Card::whereGameId($this->game->id)->get()->groupBy('location.space_id');
-        return $this->targetResolver->getValidGameboardSpaces($player, $targetTypes, $cardsState);
+        return $validSpaces;
     }
 
     private function getDeckSize(Game $game, string $deckType): int

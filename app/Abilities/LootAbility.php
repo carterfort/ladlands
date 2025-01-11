@@ -11,7 +11,7 @@ class LootAbility extends Ability {
             $title = "Damage",
             $description = "Damage target unprotected card. Draw a card if it's a camp.",
             $cost = 2,
-            $effectClass = LootEffect::class
+            $effectClasses = [LootEffect::class]
         );
     }
 }

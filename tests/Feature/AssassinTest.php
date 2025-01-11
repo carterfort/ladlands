@@ -5,6 +5,8 @@ namespace Tests\Unit;
 use App\Services\GameStateService;
 use App\Targeting\TargetResolver;
 use App\Cards\People\{AssassinDefinition, LooterDefinition};
+use App\Effects\AssassinEffect;
+use App\Effects\DestroyEffect;
 use App\Models\PlayerInputRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -51,7 +53,7 @@ class AssassinTest extends TestCase
         $validTargets = $this->gameState->getValidTargetsForAbility(
             $destroyAbility,
             $this->testData['playerA']
-        );
+        )[AssassinEffect::class];
         $this->assertContains($looter->location->space_id, $validTargets->toArray());
 
         // Create a protected looter
@@ -64,7 +66,7 @@ class AssassinTest extends TestCase
         $validTargets = $this->gameState->getValidTargetsForAbility(
             $destroyAbility,
             $this->testData['playerA']
-        );
+        )[AssassinEffect::class];
         $this->assertNotContains($looter->location->space_id, $validTargets->toArray());
     }
 
@@ -92,7 +94,7 @@ class AssassinTest extends TestCase
         $request->selected_targets = [$looter->location->space_id];
         
         // Apply the destroy effect
-        $effect = app('effects')->get($destroyAbility->effectClass);
+        $effect = app('effects')->get($destroyAbility->effectClasses)[0];
         $effect->applyWithInput($this->gameState, $request);
 
         // Verify the looter is in the discard deck
