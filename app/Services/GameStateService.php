@@ -26,14 +26,6 @@ class GameStateService
         $this->game = $game;
     }
 
-    public function putCardInSpace(Card $card, GameBoardSpace $space){
-        $card->location = [
-            'space_id' => $space->id,
-            'type' => 'BATTLEFIELD'
-        ];
-        $card->save();
-    }
-
     public function applyAbilitiesForCardsInPlay(){
 
         $cardsInPlay = $this->game->cards()->whereIn('location->type',['BATTLEFIELD'])->get();

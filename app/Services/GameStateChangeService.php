@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Card;
-use App\Models\CardLocation;
 use App\Models\Game;
 use App\Models\GameBoardSpace;
 use App\Models\Player;
@@ -52,8 +51,20 @@ class GameStateChangeService {
 
     }
 
-    public function putCardInGameBoardSpace(Card $card, GameBoardSpace $space){
+    public function putCardInSpace(Card $card, GameBoardSpace $space)
+    {
+        $card->location = [
+            'space_id' => $space->id,
+            'type' => 'BATTLEFIELD'
+        ];
+        $card->save();
+    }
 
+
+    public function addWaterForPlayer(Player $player, $amount)
+    {
+        $player->water += $amount;
+        $player->save();
     }
 
 

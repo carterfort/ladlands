@@ -30,12 +30,12 @@ class TargetResolverTest extends TestCase
         $this->gameState->setGame($this->testData['game']);
     }
 
-    public function test_looter_targeting_guard()
+    public function test_a_card_protects_another_card()
     {
         $looter = $this->testData['game']->cards()
             ->create(['card_definition' => LooterDefinition::class, 'location' => '{}']);
         $looterSpace = $this->testData['boardB']->battlefield()->wherePosition(7)->first();
-        $this->gameState->putCardInSpace($looter, $looterSpace);
+        $this->gameState->stateChanger->putCardInSpace($looter, $looterSpace);
 
         // Test Looter's damage ability targeting
         $damageAbility = new DamageAbility(2);
@@ -50,7 +50,7 @@ class TargetResolverTest extends TestCase
         $looter2 = $this->testData['game']->cards()
             ->create(['card_definition' => LooterDefinition::class, 'location' => '{}']);
         $looter2Space = $this->testData['boardB']->battlefield()->wherePosition(4)->first();
-        $this->gameState->putCardInSpace($looter2, $looter2Space);
+        $this->gameState->stateChanger->putCardInSpace($looter2, $looter2Space);
 
         $validTargets = $this->gameState->getValidTargetsForAbility(
             $damageAbility,
@@ -65,13 +65,13 @@ class TargetResolverTest extends TestCase
         $looter = $this->testData['game']->cards()
                     ->create(['card_definition' => LooterDefinition::class, 'location' => '{}']);
         $looterSpace = $this->testData['boardB']->battlefield()->wherePosition(7)->first();
-        $this->gameState->putCardInSpace($looter, $looterSpace);
+        $this->gameState->stateChanger->putCardInSpace($looter, $looterSpace);
 
 
         $resonator = $this->testData['game']->cards()
                     ->create(['card_definition' => ResonatorDefinition::class, 'location' => '{}']);
         $resonatorSpace = $this->testData['boardA']->battlefield()->wherePosition(7)->first();
-        $this->gameState->putCardInSpace($resonator, $resonatorSpace);
+        $this->gameState->stateChanger->putCardInSpace($resonator, $resonatorSpace);
 
         $this->gameState->applyAbilitiesForCardsInPlay();
 
@@ -98,5 +98,3 @@ class TargetResolverTest extends TestCase
 
     }
 }
-
-// Card definitions remain the same as before
