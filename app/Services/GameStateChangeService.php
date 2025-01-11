@@ -28,11 +28,11 @@ class GameStateChangeService {
     public function destroyCard(Card $card){
         // Do all the logic about flipping camps or sending the card to the appropriate deck
         if ($card->is_punk){
-            $card->location = ['type' => 'deck'];
+            $card->location = ['type' => 'punk_deck'];
         } elseif($card->type == 'camp'){
             $card->is_flipped = true;
         } else {
-            $card->location = ['type' => 'discard'];
+            $card->location = ['type' => 'discard_deck'];
         }
         $card->save();
     }
