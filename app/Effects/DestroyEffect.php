@@ -14,7 +14,7 @@ class DestroyEffect implements InputDependentEffect
 
     public function applyWithInput(GameStateService $state, PlayerInputRequest $request): void
     {
-        $card = $state->getGameCardsQuery()->where('location.space_id', $request->selected_spaces[0])->firstOrFail();
+        $card = $state->getGameCardsQuery()->where('location->space_id', $request->selected_spaces[0])->firstOrFail();
         $state->stateChanger->destroyCard($card);
     }
 }
