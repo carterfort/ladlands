@@ -3,6 +3,8 @@
 namespace App\Cards\People;
 
 use App\Abilities\MuseAbility;
+use App\Effects\AddWaterEffect;
+use App\Effects\Effect;
 
 class MuseDefinition extends PersonDefinition
 {
@@ -15,8 +17,8 @@ class MuseDefinition extends PersonDefinition
         return [new MuseAbility()];
     }
 
-    public function registerJunkAbility(): void
+    public function getJunkEffect(): Effect
     {
-        $this->junkAbility = new MuseAbility();
+        return new AddWaterEffect();
     }
 }

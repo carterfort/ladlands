@@ -2,8 +2,9 @@
 
 namespace App\Cards\People;
 
-use App\Abilities\DamageAbility;
 use App\Abilities\LootAbility;
+use App\Effects\AddWaterEffect;
+use App\Effects\Effect;
 
 class LooterDefinition extends PersonDefinition {
 
@@ -16,9 +17,9 @@ class LooterDefinition extends PersonDefinition {
         return [new LootAbility()];
     }
 
-    public function registerJunkAbility(): void
+    public function getJunkEffect(): Effect
     {
-        $this->junkAbility = new DamageAbility();   
+        return new AddWaterEffect();
     }
 
 }

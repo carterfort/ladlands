@@ -3,6 +3,8 @@
 namespace App\Cards\People;
 
 use App\Abilities\AssassinAbility;
+use App\Effects\Effect;
+use App\Effects\RestoreEffect;
 
 class AssassinDefinition extends PersonDefinition
 {
@@ -15,8 +17,8 @@ class AssassinDefinition extends PersonDefinition
         return [new AssassinAbility()];
     }
 
-    public function registerJunkAbility(): void
+    public function getJunkEffect(): Effect
     {
-        $this->junkAbility = new AssassinAbility();
+        return new RestoreEffect();
     }
 }
