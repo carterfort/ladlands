@@ -21,7 +21,8 @@ class Card extends Model
     protected $casts = [
         'location' => 'object',
         'is_damaged' => 'boolean',
-        'is_ready' => 'boolean'
+        'is_ready' => 'boolean',
+        'is_flipped' => 'boolean'
     ];
 
     public function game() : BelongsTo{

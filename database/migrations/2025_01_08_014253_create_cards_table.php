@@ -19,7 +19,7 @@ return new class extends Migration
             $table->boolean('is_damaged')->default(false);
             $table->boolean('is_ready')->default(true);
             $table->boolean('face_down')->default(false);
-            $table->boolean('flipped')->default(false);
+            $table->boolean('is_flipped')->default(false);
             $table->boolean('is_destroyed')->default(false);
             $table->timestamps();
         });

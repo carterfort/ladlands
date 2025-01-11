@@ -17,4 +17,9 @@ class ExterminatorEffect implements InputDependentEffect
     {
         // Get the player from the input request
     }
+
+    public function getTargetingRequirements(): array
+    {
+        return [];
+    }
 }

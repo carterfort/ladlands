@@ -12,7 +12,6 @@ class MuseAbility extends Ability
             $title = "Come, drink of my inspiration",
             $description = "Add 1 water",
             $cost = 0,
-            $targetTypes = [],
             $effectClass = AddWaterEffect::class
         );
     }

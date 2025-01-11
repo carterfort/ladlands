@@ -2,8 +2,7 @@
 
 namespace App\Abilities;
 
-use App\Effects\DestroyEffect;
-use App\Targeting\TargetType;
+use App\Effects\ResonatorEffect;
 
 class ResonatorAbility extends Ability
 {
@@ -14,8 +13,7 @@ class ResonatorAbility extends Ability
             $title = "Sound the alarm!!!",
             $description = "Destroy an unprotected, damaged card",
             $cost = $cost,
-            $targetRequirements = [TargetType::OPPONENT, TargetType::UNPROTECTED, TargetType::BATTLEFIELD, TargetType::DAMAGED],
-            $effectClass = DestroyEffect::class
+            $effectClass = ResonatorEffect::class
         );
     }
 }

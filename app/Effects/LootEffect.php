@@ -5,6 +5,7 @@ namespace App\Effects;
 use App\Models\Player;
 use App\Models\PlayerInputRequest;
 use App\Services\GameStateService;
+use App\Targeting\TargetType;
 
 class LootEffect implements InputDependentEffect {
 
@@ -24,6 +25,12 @@ class LootEffect implements InputDependentEffect {
         if ($card->getDefinition()->type == "Camp") {
             $state->stateChanger->drawCardsForPlayer($request->owningPlayer, 1);
         }
+    }
+
+    public function getTargetingRequirements(): array
+    {
+        return
+        [TargetType::OPPONENT, TargetType::UNPROTECTED, TargetType::BATTLEFIELD];
     }
 
 }

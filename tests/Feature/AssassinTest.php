@@ -55,17 +55,17 @@ class AssassinTest extends TestCase
         $this->assertContains($looter->location->space_id, $validTargets->toArray());
 
         // Create a protected looter
-        $protectedLooter = $this->testData['game']->cards()
+        $protectingLooter = $this->testData['game']->cards()
             ->create(['card_definition' => LooterDefinition::class, 'location' => '{}']);
         $protectedSpace = $this->testData['boardB']->battlefield()->wherePosition(4)->first();
-        $this->gameState->stateChanger->putCardInSpace($protectedLooter, $protectedSpace);
+        $this->gameState->stateChanger->putCardInSpace($protectingLooter, $protectedSpace);
 
         // Test valid targets again - should not include protected looter
         $validTargets = $this->gameState->getValidTargetsForAbility(
             $destroyAbility,
             $this->testData['playerA']
         );
-        $this->assertNotContains($protectedLooter->location->space_id, $validTargets->toArray());
+        $this->assertNotContains($looter->location->space_id, $validTargets->toArray());
     }
 
     public function test_assassin_destroy_effect_discards_target()
@@ -89,7 +89,7 @@ class AssassinTest extends TestCase
         // Create input request to destroy the looter
         $request = new PlayerInputRequest();
         $request->owningPlayer = $this->testData['playerA'];
-        $request->selected_spaces = [$looter->location->space_id];
+        $request->selected_targets = [$looter->location->space_id];
         
         // Apply the destroy effect
         $effect = app('effects')->get($destroyAbility->effectClass);

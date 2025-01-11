@@ -17,4 +17,9 @@ class AddWaterEffect implements ApplyToPlayerImmediatelyEffect
         $state->stateChanger->addWaterForPlayer($player, 1);
         
     }
+
+    public function getTargetingRequirements(): array
+    {
+        return [];
+    }
 }

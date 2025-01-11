@@ -2,8 +2,7 @@
 
 namespace App\Abilities;
 
-use App\Effects\DestroyEffect;
-use App\Targeting\TargetType;
+use App\Effects\AssassinEffect;
 
 class AssassinAbility extends Ability
 {
@@ -13,13 +12,7 @@ class AssassinAbility extends Ability
             $title = "Assassinate",
             $description = "Destroy an unprotected person",
             $cost = 2,
-            $targetRequirements = [
-                TargetType::OPPONENT,
-                TargetType::UNPROTECTED,
-                TargetType::PERSON,
-                TargetType::BATTLEFIELD
-            ],
-            $effectClass = DestroyEffect::class
+            $effectClass = AssassinEffect::class
         );
     }
 }

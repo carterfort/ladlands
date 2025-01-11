@@ -67,7 +67,7 @@ class GameStateService
         Ability $ability,
         Player $player
     ): Collection {
-        $targetTypes = $ability->targetTypes;
+        $targetTypes = app('effects')->get($ability->effectClass)->getTargetingRequirements();
 
         $cardsState = Card::whereGameId($this->game->id)->get()->groupBy('location.space_id');
         return $this->targetResolver->getValidGameboardSpaces($player, $targetTypes, $cardsState);

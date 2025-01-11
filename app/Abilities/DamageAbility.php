@@ -3,7 +3,6 @@
 namespace App\Abilities;
 
 use App\Effects\DamageEffect;
-use App\Targeting\TargetType;
 
 class DamageAbility extends Ability {
 
@@ -12,7 +11,6 @@ class DamageAbility extends Ability {
             $title = "Damage",
             $description = "Damage target unprotected card",
             $cost = $cost,
-            $targetRequirements = [TargetType::OPPONENT, TargetType::UNPROTECTED, TargetType::BATTLEFIELD],
             $effectClass = DamageEffect::class
         );
     }

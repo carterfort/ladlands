@@ -23,4 +23,9 @@ class GunnerEffect implements Effect
             $state->stateChanger->damageCard($card);
         }
     }
+
+    public function getTargetingRequirements(): array
+    {
+        return [];
+    }
 }

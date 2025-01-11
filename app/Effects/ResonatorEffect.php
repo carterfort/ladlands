@@ -4,12 +4,13 @@ namespace App\Effects;
 
 use App\Models\PlayerInputRequest;
 use App\Services\GameStateService;
+use App\Targeting\TargetType;
 
-class DestroyEffect implements InputDependentEffect
+class ResonatorEffect implements InputDependentEffect
 {
     public function __construct(
-            public readonly string $title = "Destroy",
-            public readonly string $description = "Destroy target card",
+            public readonly string $title = "Rattle and hum",
+            public readonly string $description = "Destroy target unprotected, damaged card",
         ){}
 
     public function applyWithInput(GameStateService $state, PlayerInputRequest $request): void
@@ -20,6 +21,10 @@ class DestroyEffect implements InputDependentEffect
 
     public function getTargetingRequirements(): array
     {
-        return [];
+        return [
+            TargetType::OPPONENT,
+            TargetType::DAMAGED,
+            TargetType::UNPROTECTED
+        ];
     }
 }

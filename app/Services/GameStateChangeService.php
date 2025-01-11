@@ -29,7 +29,7 @@ class GameStateChangeService {
         // Do all the logic about flipping camps or sending the card to the appropriate deck
         if ($card->is_punk){
             $card->location = ['type' => 'punk_deck'];
-        } elseif($card->type == 'camp'){
+        } elseif($card->type == 'Camp'){
             $card->is_flipped = true;
         } else {
             $card->location = ['type' => 'discard_deck'];

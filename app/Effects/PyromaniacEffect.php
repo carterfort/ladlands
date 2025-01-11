@@ -6,11 +6,11 @@ use App\Models\PlayerInputRequest;
 use App\Services\GameStateService;
 use App\Targeting\TargetType;
 
-class AssassinEffect implements InputDependentEffect
+class PyromaniacEffect implements InputDependentEffect
 {
     public function __construct(
-        public readonly string $title = "Fatal Strike",
-        public readonly string $description = "Completely eliminate the target",
+        public readonly string $title = "Conflagration",
+        public readonly string $description = "Burn target camp",
     ) {}
 
     public function applyWithInput(GameStateService $state, PlayerInputRequest $request): void
@@ -19,8 +19,8 @@ class AssassinEffect implements InputDependentEffect
             ->where('location->space_id', $request->selected_targets[0])
             ->firstOrFail();
 
-        // From the effect icons: Destroyed people are discarded
-        $state->stateChanger->destroyCard($targetCard);
+        // Damage the targeted camp
+        $state->stateChanger->damageCard($targetCard);
     }
 
     public function getTargetingRequirements(): array
@@ -28,7 +28,7 @@ class AssassinEffect implements InputDependentEffect
         return [
             TargetType::OPPONENT,
             TargetType::UNPROTECTED,
-            TargetType::PERSON,
+            TargetType::CAMP,
             TargetType::BATTLEFIELD
         ];
     }

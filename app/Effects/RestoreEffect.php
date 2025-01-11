@@ -4,6 +4,7 @@ namespace App\Effects;
 
 use App\Models\PlayerInputRequest;
 use App\Services\GameStateService;
+use App\Targeting\TargetType;
 
 class RestoreEffect implements InputDependentEffect
 {
@@ -18,9 +19,8 @@ class RestoreEffect implements InputDependentEffect
         $state->stateChanger->restoreCard($card);
     }
 
-    public function applyToGameState(GameStateService $state, $card)
+    public function getTargetingRequirements(): array
     {
-        // Implement the effect logic here
-        // $state->stateChanger->someAction($card);
+        return [TargetType::YOU, TargetType::DAMAGED];
     }
 }

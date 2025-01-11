@@ -3,6 +3,8 @@
 namespace App\Cards\People;
 
 use App\Abilities\ExterminatorAbility;
+use App\Effects\Effect;
+use App\Effects\RestoreEffect;
 
 class ExterminatorDefinition extends PersonDefinition
 {
@@ -15,8 +17,8 @@ class ExterminatorDefinition extends PersonDefinition
         return [new ExterminatorAbility()];
     }
 
-    public function registerJunkAbility(): void
+    public function getJunkEffect(): Effect
     {
-        $this->junkAbility = new ExterminatorAbility();
+        return new RestoreEffect();
     }
 }
