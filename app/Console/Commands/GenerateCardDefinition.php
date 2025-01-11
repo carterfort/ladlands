@@ -114,9 +114,9 @@ PHP;
         return [new {$name}Ability()];
     }
 
-    public function registerJunkAbility(): void
+    public function getJunkEffect(): Effect
     {
-        \$this->junkAbility = new {$name}Ability();
+        return new {$name}Effect();
     }
 PHP;
     }
@@ -139,6 +139,7 @@ PHP;
 namespace App\Abilities;
 
 use App\Effects\\{$name}Effect;
+use App\Effects\Effect;
 use App\Targeting\TargetType;
 
 class {$name}Ability extends Ability
@@ -166,21 +167,14 @@ namespace App\Effects;
 
 use App\Services\GameStateService;
 
-class {$name}Effect extends Effect
+class {$name}Effect implements Effect
 {
-    public function __construct()
-    {
-        parent::__construct(
+    public function __construct(
             \$title = "{$name}",
             \$description = "Description for {$name} effect",
-        );
-    }
+        ){}
 
-    public function applyToGameState(GameStateService \$state, \$card)
-    {
-        // Implement the effect logic here
-        // \$state->stateChanger->someAction(\$card);
-    }
+    // Implement the appropriate effect type
 }
 PHP;
     }
