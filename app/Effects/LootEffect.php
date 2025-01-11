@@ -3,14 +3,27 @@
 namespace App\Effects;
 
 use App\Models\Player;
+use App\Models\PlayerInputRequest;
 use App\Services\GameStateService;
 
-class LootEffect extends Effect {
+class LootEffect implements InputDependentEffect {
 
-    public function applyToGameState(GameStateService $state, $card, Player $initiatingPlayer){
+    public function __construct(
+        public readonly string $title = "Huck it, Finn!",
+        public readonly string $description = "Once more unto the breach!",
+    ) {}
+
+    public function applyWithInput(GameStateService $state, PlayerInputRequest $request): void 
+    {
+
+        $card = $state->getGameCardsQuery()
+            ->where('location->space_id', $request->selected_targets[0])
+            ->firstOrFail();
+
         $state->stateChanger->damageCard($card);
-        if ($card->type == "Camp"){
-            $state->stateChanger->drawCardsForPlayer($initiatingPlayer, 1);
+        if ($card->getDefinition()->type == "Camp") {
+            $state->stateChanger->drawCardsForPlayer($request->owningPlayer, 1);
         }
     }
+
 }

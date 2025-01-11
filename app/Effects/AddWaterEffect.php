@@ -5,18 +5,16 @@ namespace App\Effects;
 use App\Models\Player;
 use App\Services\GameStateService;
 
-class AddWaterEffect extends Effect
+class AddWaterEffect implements ApplyToPlayerImmediatelyEffect
 {
-    public function __construct()
-    {
-        parent::__construct(
-            $title = "Plus Water",
-            $description = "Damage target unprotected card",
-        );
-    }
+    public function __construct(
+        public readonly string $title = "Plus Water",
+        public readonly string $description = "Player gains water",
+    ){}
 
-    public function applyToGameState(GameStateService $state, Player $player, $amount = 1)
+    public function apply(GameStateService $state, Player $player): void
     {
-        $state->stateChanger->addWaterForPlayer($player, $amount);
+        $state->stateChanger->addWaterForPlayer($player, 1);
+        
     }
 }
