@@ -56,6 +56,11 @@ class GameStateChangeService {
 
     }
 
+    public function readyCard(Card $card){
+        $card->is_ready = true;
+        $card->save();
+    }
+
     public function putCardInSpace(Card $card, GameBoardSpace $space)
     {
         $card->location = [
