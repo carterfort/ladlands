@@ -19,11 +19,27 @@ class Card extends Model
     protected $fillable = ['card_definition', 'location'];
 
     protected $casts = [
-        'location' => 'object'
+        'location' => 'object',
+        'is_damaged' => 'boolean',
+        'is_ready' => 'boolean'
     ];
 
     public function game() : BelongsTo{
         return $this->belongsTo(Game::class);
+    }
+
+    public function scopePunkDeck($query){
+        $query->where('location->type', 'punk_deck');
+    }
+
+    public function scopeDiscardDeck($query)
+    {
+        $query->where('location->type', 'discard_deck');
+    }
+
+    public function scopeCampDeck($query)
+    {
+        $query->where('location->type', 'camp_deck');
     }
 
     protected ?CardDefinition $definitionInstance = null;
