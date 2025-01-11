@@ -13,7 +13,7 @@ class DamageAbility extends Ability {
             $description = "Damage target unprotected card",
             $cost = $cost,
             $targetRequirements = [TargetType::OPPONENT, TargetType::UNPROTECTED, TargetType::BATTLEFIELD],
-            $effect = DamageEffect::class
+            $effectClass = DamageEffect::class
         );
     }
 }

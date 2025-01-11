@@ -15,7 +15,7 @@ class ResonatorAbility extends Ability
             $description = "Destroy an unprotected, damaged card",
             $cost = $cost,
             $targetRequirements = [TargetType::OPPONENT, TargetType::UNPROTECTED, TargetType::BATTLEFIELD, TargetType::DAMAGED],
-            $effect = DestroyEffect::class
+            $effectClass = DestroyEffect::class
         );
     }
 }

@@ -13,7 +13,7 @@ class MuseAbility extends Ability
             $description = "Add 1 water",
             $cost = 0,
             $targetTypes = [],
-            $effect = AddWaterEffect::class
+            $effectClass = AddWaterEffect::class
         );
     }
 }

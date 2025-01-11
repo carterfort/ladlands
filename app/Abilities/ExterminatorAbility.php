@@ -14,7 +14,7 @@ class ExterminatorAbility extends Ability
             $description = "Destroy all damaged enemies",
             $cost = 2,
             $targetRequirements = [], // This doesn't require player input
-            $effect = ExterminatorEffect::class
+            $effectClass = ExterminatorEffect::class
         );
     }
 }
