@@ -28,9 +28,23 @@ class TargetResolver
             });
         }
 
+        if (in_array(TargetType::PERSON, $targetTypes)){
+            $gameCards = $gameCards->filter(function($item, $key){
+                return $item[0]->getDefinition()->type == "Person";
+            });
+        }
+
+        if (in_array(TargetType::CAMP, $targetTypes)) {
+            $gameCards = $gameCards->filter(function ($item, $key) {
+                return $item[0]->getDefinition()->type == "Camp";
+            });
+        }
+
         if (in_array(TargetType::UNPROTECTED, $targetTypes)){
             $query->unprotected($gameCards->keys()->toArray());
         }
+
+        $query->whereIn('id', $gameCards->keys()->toArray());
 
         return $query->get()->pluck('id');
             
