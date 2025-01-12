@@ -9,18 +9,20 @@ use Illuminate\Support\Facades\File;
 class GenerateCardDefinition extends Command
 {
     protected $signature = 'generate:card {name} {--type=Person}';
-    protected $description = 'Create a new game card with its associated ability and effect';
+    protected $description = 'Create a new game card with its ability and effect files';
 
     protected $typeNamespaces = [
         'Person' => 'App\\Cards\\People',
         'Camp' => 'App\\Cards\\Camps',
-        'Event' => 'App\\Cards\\Events'
+        'Event' => 'App\\Cards\\Events',
+        'Perma' => 'App\\Cards\\Perma'
     ];
 
     protected $baseClasses = [
         'Person' => 'PersonDefinition',
         'Camp' => 'CampDefinition',
-        'Event' => 'EventDefinition'
+        'Event' => 'EventDefinition',
+        'Perma' => 'PermaDefinition'
     ];
 
     public function handle()
@@ -34,13 +36,8 @@ class GenerateCardDefinition extends Command
         }
 
         $this->createCardDefinition($name, $type);
-
-        if ($type !== 'Event') {
-            $this->createAbility($name);
-            $this->createEffect($name);
-        } else {
-            $this->createEffect($name);
-        }
+        $this->createAbility($name, $type);
+        $this->createEffect($name, $type);
 
         $this->info("Created {$type} card '{$name}' with associated files!");
         return 0;
@@ -52,95 +49,43 @@ class GenerateCardDefinition extends Command
         $baseClass = $this->baseClasses[$type];
         $className = "{$name}Definition";
 
-        $template = $this->getCardDefinitionTemplate(
-            $namespace,
-            $className,
-            $baseClass,
-            $name,
-            $type
-        );
+        $imports = $this->getImports($type, $name);
+        $abilityImplementation = $this->getAbilityImplementation($type, $name);
 
-        $pluralType = Str::plural($type);
-
-        $path = app_path("Cards/{$pluralType}/{$className}.php");
-        $this->ensureDirectoryExists($path);
-        File::put($path, $template);
-    }
-
-    protected function createAbility($name)
-    {
-        $template = $this->getAbilityTemplate($name);
-        $path = app_path("Abilities/{$name}Ability.php");
-        $this->ensureDirectoryExists($path);
-        File::put($path, $template);
-    }
-
-    protected function createEffect($name)
-    {
-        $template = $this->getEffectTemplate($name);
-        $path = app_path("Effects/{$name}Effect.php");
-        $this->ensureDirectoryExists($path);
-        File::put($path, $template);
-    }
-
-    protected function getCardDefinitionTemplate($namespace, $className, $baseClass, $name, $type)
-    {
-        $abilityImport = $type !== 'Event' ? "use App\\Abilities\\{$name}Ability;" : '';
-        $abilitiesMethod = $type === 'Person' ? $this->getPersonAbilitiesTemplate($name) : ($type === 'Camp' ? $this->getCampAbilitiesTemplate($name) : '');
-
-        return <<<PHP
+        $template = <<<PHP
 <?php
 
 namespace {$namespace};
 
-{$abilityImport}
+{$imports}
 
 class {$className} extends {$baseClass}
 {
     public string \$title = '{$name}';
     public string \$description = 'Description for {$name}';
     public int \$waterCost = 1;
-
-    {$abilitiesMethod}
+{$abilityImplementation}
 }
 PHP;
+
+        $path = app_path("Cards/" . Str::plural($type) . "/{$className}.php");
+        $this->ensureDirectoryExists($path);
+        File::put($path, $template);
     }
 
-    protected function getPersonAbilitiesTemplate($name)
+    protected function createAbility($name, $type)
     {
-        return <<<PHP
-    public function getBaseAbilities(): array
-    {
-        return [new {$name}Ability()];
-    }
+        if ($type === 'Event') {
+            return;
+        }
 
-    public function getJunkEffect(): Effect
-    {
-        return new {$name}Effect();
-    }
-PHP;
-    }
-
-    protected function getCampAbilitiesTemplate($name)
-    {
-        return <<<PHP
-    public function getBaseAbilities(): array
-    {
-        return [new {$name}Ability()];
-    }
-PHP;
-    }
-
-    protected function getAbilityTemplate($name)
-    {
-        return <<<PHP
+        $template = <<<PHP
 <?php
 
-namespace App\Abilities;
+namespace App\\Abilities\\Definitions;
 
-use App\Effects\\{$name}Effect;
-use App\Effects\Effect;
-use App\Targeting\TargetType;
+use App\\Abilities\\Ability;
+use App\\Effects\\{$name}Effect;
 
 class {$name}Ability extends Ability
 {
@@ -148,34 +93,164 @@ class {$name}Ability extends Ability
     {
         parent::__construct(
             \$title = "{$name}",
-            \$description = "Description for {$name} ability",
+            \$description = "Description for {$name}",
             \$cost = 1,
-            \$targetRequirements = [TargetType::OPPONENT, TargetType::UNPROTECTED],
-            \$effect = {$name}Effect::class
+            \$effectClasses = [{$name}Effect::class]
         );
     }
 }
 PHP;
+
+        $path = app_path("Abilities/Definitions/{$name}Ability.php");
+        $this->ensureDirectoryExists($path);
+        File::put($path, $template);
     }
 
-    protected function getEffectTemplate($name)
+    protected function createEffect($name, $type)
     {
-        return <<<PHP
+        $interface = $this->getEffectInterface($type);
+        $implementation = $this->getEffectImplementation($type);
+
+        $template = <<<PHP
 <?php
 
-namespace App\Effects;
+namespace App\\Effects;
 
-use App\Services\GameStateService;
+use App\\Models\\PlayerInputRequest;
+use App\\Services\\GameStateService;
+use App\\Targeting\\TargetType;
 
-class {$name}Effect implements Effect
+class {$name}Effect implements {$interface}
 {
     public function __construct(
-            \$title = "{$name}",
-            \$description = "Description for {$name} effect",
-        ){}
-
-    // Implement the appropriate effect type
+        public readonly string \$title = "{$name}",
+        public readonly string \$description = "Description for {$name}",
+    ){}
+{$implementation}
 }
+PHP;
+
+        $path = app_path("Effects/{$name}Effect.php");
+        $this->ensureDirectoryExists($path);
+        File::put($path, $template);
+    }
+
+    private function getImports($type, $name)
+    {
+        $imports = [];
+
+        if ($type === 'Person') {
+            $imports[] = "use App\\Abilities\\BaseAbility;";
+            $imports[] = "use App\\Abilities\\Definitions\\{$name}Ability;";
+            $imports[] = "use App\\Effects\\Effect;";
+            $imports[] = "use App\\Effects\\RestoreEffect;";
+        } elseif ($type === 'Camp') {
+            $imports[] = "use App\\Abilities\\BaseAbility;";
+            $imports[] = "use App\\Abilities\\Definitions\\{$name}Ability;";
+        } elseif ($type === 'Event') {
+            $imports[] = "use App\\Effects\\Effect;";
+            $imports[] = "use App\\Effects\\{$name}Effect;";
+            $imports[] = "use App\\Effects\\RaidEffect;";
+        }
+
+        return implode("\n", $imports);
+    }
+
+    private function getAbilityImplementation($type, $name)
+    {
+        if ($type === 'Person') {
+            return <<<PHP
+
+    public function getBaseAbilities(): array
+    {
+        return [
+            new BaseAbility(new {$name}Ability())
+        ];
+    }
+
+    public function getJunkEffect(): Effect
+    {
+        return new RestoreEffect();
+    }
+PHP;
+        } elseif ($type === 'Camp') {
+            return <<<PHP
+
+    public function getBaseAbilities(): array
+    {
+        return [new BaseAbility(new {$name}Ability())];
+    }
+PHP;
+        } elseif ($type === 'Event') {
+            return <<<PHP
+
+    public function getEventEffects(): array
+    {
+        return [new {$name}Effect()];
+    }
+
+    public function getJunkEffect(): Effect
+    {
+        return new RaidEffect();
+    }
+PHP;
+        }
+
+        return '';
+    }
+
+    private function getEffectInterface($type)
+    {
+        return match ($type) {
+            'Person', 'Camp' => 'InputDependentEffect',
+            'Event' => 'InputDependentEffect, CreatesRequestForOpponent',
+            default => 'Effect'
+        };
+    }
+
+    private function getEffectImplementation($type)
+    {
+        if ($type === 'Event') {
+            return <<<'PHP'
+
+    public function applyWithInput(GameStateService $state, PlayerInputRequest $request): void
+    {
+        $targetCard = $state->getGameCardsQuery()
+            ->where('location->space_id', $request->selected_targets[0])
+            ->firstOrFail();
+
+        // Implement event effect logic here
+    }
+
+    public function getTargetingRequirements(): array
+    {
+        return [
+            TargetType::YOU,
+            TargetType::BATTLEFIELD
+        ];
+    }
+PHP;
+        }
+
+        return <<<'PHP'
+
+    public function applyWithInput(GameStateService $state, PlayerInputRequest $request): void
+    {
+        $targetCard = $state->getGameCardsQuery()
+            ->where('location->space_id', $request->selected_targets[0])
+            ->firstOrFail();
+
+        // Implement effect logic here
+    }
+
+    public function getTargetingRequirements(): array
+    {
+        return [
+            TargetType::OPPONENT,
+            TargetType::UNPROTECTED,
+            TargetType::BATTLEFIELD
+        ];
+    }
 PHP;
     }
 
