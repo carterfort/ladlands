@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
 class GameStateService
 {
 
-    protected Game $game;
+    public readonly Game $game;
     protected Collection $abilities;
 
     public function __construct(
@@ -32,14 +32,11 @@ class GameStateService
     }
 
     public function endTurn(){
-        $this->getGameCardsQuery()->update(['is_ready' => true]);
+        $this->stateChanger->endTurn($this);
     }
 
     public function startTurn(){
-        $this->game->current_player_id = $this->game->currentPlayer->getOpponent()->id;
-        $this->game->save();
-
-        $this->game->currentPlayer->update(['water' => 3]);
+        $this->stateChanger->startTurnForPlayer($this, $this->game->currentPlayer->getOpponent());
 
         $eventQueueSpaces = $this->game->currentPlayer->board->spaces()->type('EVENT')->pluck('id');
         
@@ -66,7 +63,7 @@ class GameStateService
     }
 
     public function applyEventEffect(Effect $effect){
-
+        
     }
 
 
