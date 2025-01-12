@@ -15,7 +15,13 @@ class ExterminatorEffect implements InputDependentEffect
 
     public function applyWithInput(GameStateService $state, PlayerInputRequest $request): void
     {
-        // Get the player from the input request
+        $targets = $request->owningPlayer->getOpponent()->board->spaces()->pluck('id');
+        $damagedCards = $state->getGameCardsQuery()->whereIn('location->space_id', $targets)->where('is_damaged', true)->get();
+        foreach ($damagedCards as $card){
+            if ($card->getDefinition()->type == 'Person'){
+                $state->stateChanger->destroyCard($card);
+            }
+        }
     }
 
     public function getTargetingRequirements(): array
