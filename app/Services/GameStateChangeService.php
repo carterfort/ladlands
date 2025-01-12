@@ -68,6 +68,21 @@ class GameStateChangeService {
         $card->save();
     }
 
+    public function putPunkInSpace(GameStateService $state, GameBoardSpace $space)
+    {
+        // TODO: Add a check that this card is an event or a person
+
+        // TODO: Check if this needs to trigger a shuffle of Discard => Punk
+        $card = $state->getGameCardsQuery()->punk()->shuffle()->first();
+
+        $card->location = [
+            'space_id' => $space->id,
+            'type' => 'BATTLEFIELD'
+        ];
+        $card->is_flipped = true;
+        $card->save();
+    }
+
 
     public function addWaterForPlayer(Player $player, $amount)
     {
