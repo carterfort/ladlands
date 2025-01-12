@@ -2,7 +2,7 @@
 
 namespace App\Effects;
 
-use App\Events\CreatesRequestForOpponent;
+use App\Effects\CreatesRequestForOpponent;
 use App\Models\PlayerInputRequest;
 use App\Services\GameStateService;
 use App\Targeting\TargetType;

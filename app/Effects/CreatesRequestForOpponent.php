@@ -1,5 +1,5 @@
 <?php
 
-namespace App\Events;
+namespace App\Effects;
 
 interface CreatesRequestForOpponent {}
