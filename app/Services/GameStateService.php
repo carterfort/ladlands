@@ -250,7 +250,12 @@ class GameStateService
         // Delegate handling
         $this->abilityHandler->activateAbilityByPlayer($this, $ability, $player);
 
+        
         // Resolve anything else?
+    }
+
+    public function cardHasUsedAbilityThisTurn(Card $card, Ability $ability){
+        
     }
 
 }
