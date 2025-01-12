@@ -13,6 +13,10 @@ class Player extends Model
     /** @use HasFactory<\Database\Factories\PlayerFactory> */
     use HasFactory;
 
+    public function user(): BelongsTo {
+        return $this->belongsTo(User::class);
+    }
+
     public function game(): BelongsTo{
         return $this->belongsTo(Game::class);
     }

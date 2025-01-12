@@ -20,7 +20,7 @@ return new class extends Migration
             $table->json('valid_targets');
             $table->json('selected_targets');
             $table->enum('target_type', ['cards', 'spaces', 'options']);
-            $table->string('effect_key');
+            $table->string('effect_key')->default("");
             $table->boolean('completed')->default(false);
             $table->timestamps();
         });

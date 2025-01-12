@@ -17,7 +17,8 @@ class PlayerInputRequestFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'valid_targets' => [],
+            'selected_targets' => [],
         ];
     }
 }

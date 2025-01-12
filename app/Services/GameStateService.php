@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Abilities\Ability;
-use App\Abilities\AvailabilityRule;
-use App\Cards\HasAbilities;
 use App\Cards\Perma\RaidersDefinition;
 use App\Cards\Perma\WaterSiloDefinition;
 use App\Effects\ApplyToPlayerImmediatelyEffect;
@@ -139,39 +137,67 @@ class GameStateService
         return $hasValidTargets;
     }
 
-    public function applyAbilitiesForCardsInPlay()
+    public function applyAbilitiesForCardsInPlay(): void
     {
-        $cardsInPlay = $this->game->cards()->whereIn('location->type', ['BATTLEFIELD'])->get();
+        $this->abilities = collect([]);
+
+        $cardsInPlay = $this->game->cards()->whereJsonContains('location->type', 'BATTLEFIELD')->get();
         $cardsState = Card::whereGameId($this->game->id)->get()->groupBy('location.space_id');
 
         $cardsInPlay->each(function (Card $card) use ($cardsState) {
             $definition = $card->getDefinition();
-            if (!($definition instanceof HasAbilities)) {
+
+            if (!method_exists($definition, 'getBaseAbilities')) {
                 return;
             }
 
             $baseAbilities = $definition->getBaseAbilities();
-            $validatedAbilities = [];
+            $validAbilities = [];
 
             foreach ($baseAbilities as $baseAbility) {
-                foreach ($baseAbility->rules as $rule){
-                    if (! $rule->isAvailable($this, $card)){
-                        continue;
-                    }
-                }
-                $ability = $baseAbility->ability;
-                $hasValidTargets = $this->checkForValidTargetsForEffects(
-                    app('effects')->get($ability->effectClasses), $card, $cardsState);
-
-                if ($hasValidTargets) {
-                    $validatedAbilities[] = $ability;
+                if ($this->isAbilityAvailable($baseAbility, $card, $cardsState)) {
+                    $validAbilities[] = $baseAbility->ability;
                 }
             }
 
-            if (!empty($validatedAbilities)) {
-                $this->abilities[$card->id] = $validatedAbilities;
+            if (!empty($validAbilities)) {
+                $this->abilities[$card->id] = $validAbilities;
             }
         });
+    }
+
+    private function isAbilityAvailable($baseAbility, Card $card, Collection $cardsState): bool
+    {
+        // Check availability rules
+        foreach ($baseAbility->rules as $rule) {
+            if (!$rule->isAvailable($this, $card)) {
+                return false;
+            }
+        }
+
+        // Check if there are valid targets
+        $effects = app('effects')->get($baseAbility->ability->effectClasses);
+        $hasValidTargets = true;
+
+        foreach ($effects as $effect) {
+            $targetTypes = $effect->getTargetingRequirements();
+            if (empty($targetTypes)) {
+                continue;
+            }
+
+            $validSpaces = $this->targetResolver->getValidGameboardSpaces($card->getOwner(), $targetTypes, $cardsState);
+            if ($validSpaces->isEmpty()) {
+                $hasValidTargets = false;
+                break;
+            }
+        }
+
+        return $hasValidTargets;
+    }
+
+    public function getAvailableAbilities(): Collection
+    {
+        return $this->abilities;
     }
 
     public function getAbilitiesForCard(Card $card){

@@ -16,6 +16,10 @@ class PlayerInputRequest extends Model
         'selected_targets' => 'array'
     ];
 
+    public function scopePending($query){
+        $query->where('completed', false);
+    }
+
     public function game(): BelongsTo {
         return $this->belongsTo(Game::class);
     }

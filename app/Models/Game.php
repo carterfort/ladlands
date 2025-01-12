@@ -33,5 +33,9 @@ class Game extends Model
     public function cards(): HasMany {
         return $this->hasMany(Card::class);
     }
+    
+    public function playerInputRequests(): HasMany {
+        return $this->hasMany(PlayerInputRequest::class);
+    }
 
 }
