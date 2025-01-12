@@ -13,6 +13,11 @@ class Game extends Model
     /** @use HasFactory<\Database\Factories\GameFactory> */
     use HasFactory;
 
+    protected $fillable = ['current_player_id'];
+
+    public function currentPlayer(): HasOne {
+        return $this->hasOne(Player::class);
+    }
     public function players(): HasMany {
         return $this->hasMany(Player::class);
     }
