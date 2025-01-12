@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Abilities\Ability;
+use App\Abilities\AvailabilityRule;
 use App\Cards\HasAbilities;
 use App\Effects\ApplyToPlayerImmediatelyEffect;
 use App\Effects\Effect;
@@ -130,7 +131,13 @@ class GameStateService
             $baseAbilities = $definition->getBaseAbilities();
             $validatedAbilities = [];
 
-            foreach ($baseAbilities as $ability) {
+            foreach ($baseAbilities as $baseAbility) {
+                foreach ($baseAbility->rules as $rule){
+                    if (! $rule->isAvailable($this, $card)){
+                        continue;
+                    }
+                }
+                $ability = $baseAbility->ability;
                 $hasValidTargets = $this->checkForValidTargetsForEffects(
                     app('effects')->get($ability->effectClasses), $card, $cardsState);
 

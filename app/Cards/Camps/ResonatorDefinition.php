@@ -2,7 +2,8 @@
 
 namespace App\Cards\Camps;
 
-use App\Abilities\ResonatorAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\ResonatorAbility;
 
 class ResonatorDefinition extends CampDefinition
 {
@@ -12,6 +13,6 @@ class ResonatorDefinition extends CampDefinition
 
     public function getBaseAbilities(): array
     {
-        return [new ResonatorAbility()];
+        return [new BaseAbility(new ResonatorAbility())];
     }
 }

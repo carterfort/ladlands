@@ -2,7 +2,8 @@
 
 namespace App\Cards\People;
 
-use App\Abilities\ExterminatorAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\ExterminatorAbility;
 use App\Effects\Effect;
 use App\Effects\RestoreEffect;
 
@@ -14,7 +15,9 @@ class ExterminatorDefinition extends PersonDefinition
 
         public function getBaseAbilities(): array
     {
-        return [new ExterminatorAbility()];
+        return [
+            new BaseAbility(new ExterminatorAbility())
+        ];
     }
 
     public function getJunkEffect(): Effect

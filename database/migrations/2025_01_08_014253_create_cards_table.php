@@ -18,8 +18,7 @@ return new class extends Migration
             $table->json('location');
             $table->boolean('is_damaged')->default(false);
             $table->boolean('is_ready')->default(true);
-            $table->boolean('face_down')->default(false);
-            $table->boolean('is_flipped')->default(false);
+            $table->boolean('is_punk')->default(false);
             $table->boolean('is_destroyed')->default(false);
             $table->timestamps();
         });

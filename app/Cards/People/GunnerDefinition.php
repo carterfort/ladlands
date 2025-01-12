@@ -2,7 +2,8 @@
 
 namespace App\Cards\People;
 
-use App\Abilities\GunnerAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\GunnerAbility;
 use App\Effects\Effect;
 use App\Effects\RestoreEffect;
 
@@ -14,7 +15,11 @@ class GunnerDefinition extends PersonDefinition
 
     public function getBaseAbilities(): array
     {
-        return [new GunnerAbility()];
+        return [
+            new BaseAbility(
+                new GunnerAbility()
+            )
+        ];
     }
 
     public function getJunkEffect(): Effect

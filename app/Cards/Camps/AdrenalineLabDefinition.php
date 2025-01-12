@@ -2,7 +2,8 @@
 
 namespace App\Cards\Camps;
 
-use App\Abilities\AdrenalineLabAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\AdrenalineLabAbility;
 
 class AdrenalineLabDefinition extends CampDefinition
 {
@@ -12,6 +13,6 @@ class AdrenalineLabDefinition extends CampDefinition
 
         public function getBaseAbilities(): array
     {
-        return [new AdrenalineLabAbility()];
+        return [new BaseAbility(new AdrenalineLabAbility())];
     }
 }

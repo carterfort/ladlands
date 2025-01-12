@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Abilities;
+namespace App\Abilities\Definitions;
 
+use App\Abilities\Ability;
 use App\Effects\BloodBankEffect;
 
 class BloodBankAbility extends Ability

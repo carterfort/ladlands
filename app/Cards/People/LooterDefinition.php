@@ -2,7 +2,8 @@
 
 namespace App\Cards\People;
 
-use App\Abilities\LootAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\LootAbility;
 use App\Effects\AddWaterEffect;
 use App\Effects\Effect;
 
@@ -14,7 +15,7 @@ class LooterDefinition extends PersonDefinition {
 
     public function getBaseAbilities(): array
     {
-        return [new LootAbility()];
+        return [new BaseAbility(new LootAbility())];
     }
 
     public function getJunkEffect(): Effect

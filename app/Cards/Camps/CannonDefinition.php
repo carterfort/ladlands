@@ -2,7 +2,8 @@
 
 namespace App\Cards\Camps;
 
-use App\Abilities\CannonAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\CannonAbility;
 
 class CannonDefinition extends CampDefinition
 {
@@ -12,6 +13,6 @@ class CannonDefinition extends CampDefinition
 
     public function getBaseAbilities(): array
     {
-        return [new CannonAbility()];
+        return [new BaseAbility(new CannonAbility())];
     }
 }

@@ -2,7 +2,8 @@
 
 namespace App\Cards\People;
 
-use App\Abilities\AssassinAbility;
+use App\Abilities\Definitions\AssassinAbility;
+use App\Abilities\BaseAbility;
 use App\Effects\Effect;
 use App\Effects\RestoreEffect;
 
@@ -14,7 +15,11 @@ class AssassinDefinition extends PersonDefinition
 
         public function getBaseAbilities(): array
     {
-        return [new AssassinAbility()];
+        return [
+            new BaseAbility(new AssassinAbility(), [
+                /** No special rules for availability */
+            ])
+        ];
     }
 
     public function getJunkEffect(): Effect

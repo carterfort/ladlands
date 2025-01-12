@@ -2,8 +2,10 @@
 
 namespace App\Cards\People;
 
-use App\Abilities\DamageAbility;
-use App\Abilities\RabbleRouserPunkAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\DamageAbility;
+use App\Abilities\Definitions\RabbleRouserPunkAbility;
+use App\Abilities\Rules\HasPunksInPlayRule;
 use App\Effects\RaidEffect;
 use App\Effects\Effect;
 
@@ -15,11 +17,10 @@ class RabbleRouserDefinition extends PersonDefinition
 
     public function getBaseAbilities(): array
     {
-        $abilities = [new RabbleRouserPunkAbility()];
-        // Check to be sure that the controlling player
-        // has at least one punk on their board.
-        // If they do, add the DamageAbility
-        return $abilities;
+        return [
+            new BaseAbility(new RabbleRouserPunkAbility()),
+            new BaseAbility(new DamageAbility(), [new HasPunksInPlayRule()])
+        ];
     }
 
     public function getJunkEffect(): Effect

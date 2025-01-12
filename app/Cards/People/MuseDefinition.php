@@ -2,7 +2,8 @@
 
 namespace App\Cards\People;
 
-use App\Abilities\MuseAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\MuseAbility;
 use App\Effects\AddWaterEffect;
 use App\Effects\Effect;
 
@@ -14,7 +15,7 @@ class MuseDefinition extends PersonDefinition
             
     public function getBaseAbilities(): array
     {
-        return [new MuseAbility()];
+        return [new BaseAbility(new MuseAbility())];
     }
 
     public function getJunkEffect(): Effect

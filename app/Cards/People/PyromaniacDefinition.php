@@ -2,7 +2,8 @@
 
 namespace App\Cards\People;
 
-use App\Abilities\PyromaniacAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\PyromaniacAbility;
 use App\Effects\Effect;
 use App\Effects\RestoreEffect;
 
@@ -14,7 +15,7 @@ class PyromaniacDefinition extends PersonDefinition
 
     public function getBaseAbilities(): array
     {
-        return [new PyromaniacAbility()];
+        return [new BaseAbility(new PyromaniacAbility())];
     }
 
     public function getJunkEffect(): Effect

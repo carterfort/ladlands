@@ -2,7 +2,8 @@
 
 namespace App\Cards\Camps;
 
-use App\Abilities\AtomicGardenAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\AtomicGardenAbility;
 
 class AtomicGardenDefinition extends CampDefinition
 {
@@ -12,6 +13,6 @@ class AtomicGardenDefinition extends CampDefinition
 
     public function getBaseAbilities(): array
     {
-        return [new AtomicGardenAbility()];
+        return [new BaseAbility(new AtomicGardenAbility())];
     }
 }

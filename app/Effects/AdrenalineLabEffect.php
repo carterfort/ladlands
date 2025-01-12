@@ -21,7 +21,7 @@ class AdrenalineLabEffect implements InputDependentEffect
             ->firstOrFail();
 
         // Get the ability from the target card
-        $ability = $targetCard->getDefinition()->getBaseAbilities()[0];
+        $ability = $targetCard->getDefinition()->getBaseAbilities()[0]->ability;
 
         // Validate water cost
         if ($request->owningPlayer->water < $ability->cost) {

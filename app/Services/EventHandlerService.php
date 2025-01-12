@@ -10,7 +10,10 @@ class EventHandlerService {
 
     public function advanceEvent(Card $event){
         // Get this card's position
-        $position = GameBoardSpace::findOrFail($event->location->space_id);
+        $position = GameBoardSpace::findOrFail($event->location->space_id)->position;
+        if ($position == 1){
+            
+        }
     }
 
 }

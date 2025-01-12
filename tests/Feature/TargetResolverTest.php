@@ -6,7 +6,7 @@ use App\Services\GameStateService;
 use App\Targeting\TargetResolver;
 use App\Cards\Camps\{ResonatorDefinition};
 use App\Cards\People\{LooterDefinition};
-use App\Abilities\{DamageAbility};
+use App\Abilities\Definitions\{DamageAbility};
 use App\Effects\DamageEffect;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

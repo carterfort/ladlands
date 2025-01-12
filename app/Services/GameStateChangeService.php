@@ -30,10 +30,14 @@ class GameStateChangeService {
         // Do all the logic about flipping camps or sending the card to the appropriate deck
         if ($card->is_punk){
             $card->location = ['type' => 'punk_deck'];
+            $card->is_punk = false;
+            $card->is_damaged = false;
         } elseif($card->type == 'Camp'){
-            $card->is_flipped = true;
+            $card->is_destroyed = true;
         } else {
             $card->location = ['type' => 'discard_deck'];
+            $card->is_punk = false;
+            $card->is_damaged = false;
         }
         $card->save();
     }
@@ -79,7 +83,7 @@ class GameStateChangeService {
             'space_id' => $space->id,
             'type' => 'BATTLEFIELD'
         ];
-        $card->is_flipped = true;
+        $card->is_punk = true;
         $card->save();
     }
 

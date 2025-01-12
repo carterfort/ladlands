@@ -2,7 +2,8 @@
 
 namespace App\Cards\Camps;
 
-use App\Abilities\BloodBankAbility;
+use App\Abilities\BaseAbility;
+use App\Abilities\Definitions\BloodBankAbility;
 
 class BloodBankDefinition extends CampDefinition
 {
@@ -12,6 +13,6 @@ class BloodBankDefinition extends CampDefinition
 
     public function getBaseAbilities(): array
     {
-        return [new BloodBankAbility()];
+        return [new BaseAbility(new BloodBankAbility())];
     }
 }

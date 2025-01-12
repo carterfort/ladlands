@@ -70,7 +70,7 @@ class EffectsTest extends TestCase
 
         $waterBefore = $this->testData['playerA']->water;
 
-        $this->gameState->playerActivatesAbilityViaCard($this->testData['playerA'], $abilities[0], $muse);
+        $this->gameState->playerActivatesAbilityViaCard($this->testData['playerA'], $abilities[0]->ability, $muse);
 
         $waterAfter = $this->testData['playerA']->fresh()->water;
 
