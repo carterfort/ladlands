@@ -10,6 +10,16 @@ use App\Models\PlayerInputRequest;
 
 class GameStateChangeService {
 
+    public function endTurn(GameStateService $state){
+        $state->getGameCardsQuery()->update(['is_ready' => true]);
+
+    }
+
+    public function startTurnForPlayer(GameStateService $state, Player $player){
+        $state->game->update(['current_player_id' => $player->id]);
+        $player->update(['water' => 3]);
+    }
+
     public function damageCard(Card $card){
         // Do all the logic about how to handle damage to a card.
         $card->is_damaged = true;
