@@ -51,7 +51,7 @@ trait GameTestHelper
                 $space->position = $i;
                 $space->save();
             }
-            for ($i = 0; $i < 2; $i++) {
+            for ($i = 1; $i < 3; $i++) {
                 $space = new GameBoardSpace();
                 $space->game_board_id = $board->id;
                 $space->type = "PERMA";

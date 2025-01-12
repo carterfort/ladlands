@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Abilities\Ability;
 use App\Abilities\AvailabilityRule;
 use App\Cards\HasAbilities;
+use App\Cards\Perma\RaidersDefinition;
+use App\Cards\Perma\WaterSiloDefinition;
 use App\Effects\ApplyToPlayerImmediatelyEffect;
 use App\Effects\Effect;
 use App\Effects\InputDependentEffect;
@@ -57,6 +59,26 @@ class GameStateService
 
     public function buildDecks(){
         $this->deckBuilder->buildDecks($this->game);
+    }
+
+    public function placePermaCards(){
+
+        $permaCardDefinitions = [WaterSiloDefinition::class, RaidersDefinition::class];
+
+        foreach($this->game->players as $player){
+            foreach ($permaCardDefinitions as $i => $definitionClass){
+                $definition = new $definitionClass();
+                $space = $player->board->spaces()->type('PERMA')->wherePosition($i+1)->first();
+                
+                // Create and save the card
+                $card = new Card();
+                $card->game()->associate($this->game);
+                $card->card_definition = get_class($definition);
+                $card->location = ['type' => 'space', 'space_id' => $space->id];
+                $card->save();
+            }
+            
+        }
     }
 
     public function getGameCardsQuery(){

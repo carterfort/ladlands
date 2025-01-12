@@ -17,4 +17,5 @@ enum TargetType
     case ANY_CARD;
     case BATTLEFIELD;
     case SPACE;
+    case UNDESTROYED;
 }

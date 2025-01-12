@@ -23,6 +23,14 @@ class GameBoard extends Model
         return $this->spaces()->type('BATTLEFIELD');
     }
 
+    public function eventQueue(): HasMany {
+        return $this->spaces()->type('EVENT');
+    }
+
+    public function perma(): HasMany {
+        return $this->spaces()->type("PERMA");
+    }
+
     public function player(): BelongsTo {
         return $this->belongsTo(Player::class);
     }

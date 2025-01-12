@@ -72,6 +72,14 @@ class GameStateChangeService {
         $card->save();
     }
 
+    public function putCardInHandForPlayer(Card $card, Player $player){
+        $card->location = [
+            'type' => 'player_hand',
+            'player_id' => $player->id
+        ];
+        $card->save();
+    }
+
     public function putPunkInSpace(GameStateService $state, GameBoardSpace $space)
     {
         // TODO: Add a check that this card is an event or a person
