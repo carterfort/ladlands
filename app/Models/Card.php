@@ -7,6 +7,7 @@ use App\Cards\Camps\CampDefinition;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Cards\CardDefinition;
+use App\Cards\Events\EventDefinition;
 use App\Cards\People\PeopleDefinition;
 use App\Cards\People\PersonDefinition;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +17,7 @@ class Card extends Model
     /** @use HasFactory<\Database\Factories\CardFactory> */
     use HasFactory;
 
-    protected $fillable = ['card_definition', 'location'];
+    protected $fillable = ['card_definition', 'location', 'is_ready'];
 
     protected $casts = [
         'location' => 'object',
@@ -59,7 +60,7 @@ class Card extends Model
 
     protected ?CardDefinition $definitionInstance = null;
 
-    public function getDefinition(): PersonDefinition|CampDefinition
+    public function getDefinition(): PersonDefinition|CampDefinition|EventDefinition
     {
         if (!$this->definitionInstance) {
             $definitionClass = $this->card_definition;

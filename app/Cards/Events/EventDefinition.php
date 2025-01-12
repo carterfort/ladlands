@@ -3,6 +3,7 @@
 namespace App\Cards\Events;
 
 use App\Cards\CardDefinition;
+use App\Effects\Effect;
 
 abstract class EventDefinition extends CardDefinition {
     public string $title = '';
@@ -11,6 +12,7 @@ abstract class EventDefinition extends CardDefinition {
     public int $baseTimer = 1;
     public string $type = "Event";
 
-    abstract public function calculateBaseTimer();
+    abstract public function getEventEffects(): array;
+    abstract public function getJunkEffect(): Effect;
 
 }

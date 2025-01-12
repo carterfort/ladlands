@@ -2,12 +2,12 @@
 
 namespace App\Cards\People;
 
-use App\Abilities\Ability;
 use App\Cards\CardDefinition;
 use App\Cards\HasAbilities;
+use App\Cards\HasJunkEffect;
 use App\Effects\Effect;
 
-abstract class PersonDefinition extends CardDefinition implements HasAbilities
+abstract class PersonDefinition extends CardDefinition implements HasAbilities, HasJunkEffect
 {
 
     public string $title = '';

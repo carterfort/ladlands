@@ -4,9 +4,10 @@ namespace App\Services;
 
 use App\Abilities\Ability;
 use App\Cards\HasAbilities;
+use App\Effects\ApplyToPlayerImmediatelyEffect;
 use App\Effects\Effect;
 use App\Effects\InputDependentEffect;
-use App\Models\{Game, Player, Card, PlayerInputRequest};
+use App\Models\{Game, Player, Card, GameBoardSpace, PlayerInputRequest};
 use App\Targeting\TargetResolver;
 use Illuminate\Support\Collection;
 
@@ -21,12 +22,39 @@ class GameStateService
         private readonly AbilityHandlerService $abilityHandler,
         public readonly GameStateChangeService $stateChanger,
         public readonly TargetResolver $targetResolver,
+        public readonly EventHandlerService $eventHandler,
     ) {
         $this->abilities = collect([]);
     }
 
     public function setGame(Game $game){
         $this->game = $game;
+    }
+
+    public function endTurn(){
+        $this->getGameCardsQuery()->update(['is_ready' => true]);
+    }
+
+    public function startTurn(){
+        $this->game->current_player_id = $this->game->currentPlayer->getOpponent()->id;
+        $this->game->save();
+
+        $this->game->currentPlayer->update(['water' => 3]);
+
+        $eventQueueSpaces = $this->game->currentPlayer->board->spaces()->type('EVENT')->pluck('id');
+        
+        $this->getGameCardsQuery()
+            ->where('location->type', 'event_queue')
+            ->whereIn('location->space_id', $eventQueueSpaces)
+            ->each(function (Card $event){
+                $position = GameBoardSpace::findOrFail($event->location->space_id)->position;
+                if ($position == 1) {
+                    $effects = $event->getDefinition()->getEventEffects();
+                    foreach($effects as $effect){
+                        $this->applyEventEffect($effect);
+                    }
+                }
+            });
     }
 
     public function buildDecks(){
@@ -37,20 +65,60 @@ class GameStateService
         return $this->game->cards();
     }
 
+    public function applyEventEffect(Effect $effect){
+
+    }
+
+
+    public function applyEffect($effect, ?PlayerInputRequest $request, ?Player $player)
+    {
+        $implements = collect(class_implements($effect));
+        when(
+            $implements->contains(InputDependentEffect::class) && $request,
+                fn() => $effect->applyWithInput($this, $request),
+            $implements->contains(ApplyToPlayerImmediatelyEffect::class),
+                fn() => $effect->applyEffect($this, $player)
+        );
+    }
+
+    public function advanceEventInQueue(Card $event)
+    {
+        if ($event->location->position = 0) {
+            $effect = $event->definition->getEventEffect();
+            $this->applyEffect($effect, NULL, $event->owner);
+        }
+    }
+
+
     public function handleInputRequestResponse(PlayerInputRequest $request): void {
         
         // Will we want to add logging here? Or is that in the StateChangeService?
 
         $effects = app('effects')->get($request->effect_key);
         foreach($effects as $effect){
-            $implements = collect(class_implements($effect));
-            when(
-                $implements->contains(InputDependentEffect::class),
-                fn() => $effect->applyWithInput($this, $request)
-            );
+            $this->applyEffect($effect, $request, NULL);
         }
-
     }
+
+    protected function checkForValidTargetsForEffects(array $effects, $card, $cardsState): bool {
+        $hasValidTargets = true;
+        // Check each effect has valid targets
+        foreach ($effects as $effect) {
+            $targetTypes = $effect->getTargetingRequirements();
+            if (empty($targetTypes)) {
+                continue;
+            }
+
+            $validSpaces = $this->targetResolver->getValidGameboardSpaces($card->getOwner(), $targetTypes, $cardsState);
+
+            if ($validSpaces->isEmpty()) {
+                $hasValidTargets = false;
+                break;
+            }
+        }
+        return $hasValidTargets;
+    }
+
     public function applyAbilitiesForCardsInPlay()
     {
         $cardsInPlay = $this->game->cards()->whereIn('location->type', ['BATTLEFIELD'])->get();
@@ -66,23 +134,8 @@ class GameStateService
             $validatedAbilities = [];
 
             foreach ($baseAbilities as $ability) {
-                $effects = app('effects')->get($ability->effectClasses);
-                $hasValidTargets = true;
-
-                // Check each effect has valid targets
-                foreach ($effects as $effect) {
-                    $targetTypes = $effect->getTargetingRequirements();
-                    if (empty($targetTypes)) {
-                        continue;
-                    }
-
-                    $validSpaces = $this->targetResolver->getValidGameboardSpaces($card->getOwner(), $targetTypes, $cardsState);
-
-                    if ($validSpaces->isEmpty()) {
-                        $hasValidTargets = false;
-                        break;
-                    }
-                }
+                $hasValidTargets = $this->checkForValidTargetsForEffects(
+                    app('effects')->get($ability->effectClasses), $card, $cardsState);
 
                 if ($hasValidTargets) {
                     $validatedAbilities[] = $ability;
