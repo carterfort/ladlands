@@ -1,193 +1,214 @@
 # Ladlands Game System Architecture
 
-## System Overview
+## System Architecture Diagrams
 
-This system implements a two-player card game where cards can be:
-
-- Played to the battlefield by paying a wayer cost
-- Junked (discarded from a hand) for free to activate their Junk Ability
-- Damaged or destroyed during gameplay
-- Drawn from or returned to various decks
-- Placed in an Event Queue that advances every turn
-- Activated on the Battlefield to perform an Ability
-
-## Core Components
-
-### Game State Management
-
-#### Game & GameBoard Models
-The `Game` model represents an active game session between two players (playerA and playerOne). Each player has their own `GameBoard` which contains:
-
-- Battlefield (3x3 grid of spaces)
-- Event Queue (3 spaces)
-- Perma Cards area (2 spaces)
-
-```php
-Game -> hasOne(GameBoard) for each player
-GameBoard -> hasMany(GameBoardSpace)
+### Core Model Relationships
+```mermaid
+classDiagram
+    Game "1" -- "2" Player
+    Player "1" -- "1" GameBoard
+    GameBoard "1" -- "14" GameBoardSpace
+    Game "1" -- "*" Card
+    Player "1" -- "*" PlayerInputRequest
+    Card -- CardDefinition
+    
+    class Game{
+        +currentPlayer
+        +status
+        +winner_id
+    }
+    class Player{
+        +water
+        +game_seat
+        +hand()
+    }
+    class GameBoard{
+        +battlefield()
+        +eventQueue()
+        +perma()
+    }
+    class Card{
+        +location
+        +is_damaged
+        +is_ready
+        +card_definition
+    }
 ```
 
-#### Card Location Tracking
-The system uses the `CardLocation` model to track where every card is at any given time. A card can be in one of these locations:
-- On a GameBoardSpace
-- In a player's hand
-- In the Punk deck
-- In the discard deck
+### Effect Resolution Flow
+```mermaid
+sequenceDiagram
+    Player->>+GameController: Activate Ability
+    GameController->>+GameStateService: playerActivatesAbilityViaCard()
+    GameStateService->>+AbilityHandlerService: activateAbilityByPlayer()
+    AbilityHandlerService->>+Effect: apply()
+    Effect->>+GameStateChangeService: stateChanger commands
+    GameStateChangeService-->>-Effect: done
+    Effect-->>-AbilityHandlerService: done 
+    AbilityHandlerService-->>-GameStateService: done
+    GameStateService-->>-GameController: done
+    GameController-->>-Player: Response
+```
 
-The `CardLocationManager` service ensures cards can only be in one place at a time and validates all movements.
+### Targeting Resolution Flow
+```mermaid
+sequenceDiagram
+    Effect->>+TargetResolver: getValidGameboardSpaces()
+    TargetResolver->>+GameBoard: Query spaces
+    GameBoard->>+GameBoardSpace: Filter by type
+    GameBoardSpace-->>-GameBoard: Filtered spaces
+    GameBoard-->>-TargetResolver: Board spaces
+    TargetResolver->>+Card: Check states
+    Card-->>-TargetResolver: Valid states
+    TargetResolver-->>-Effect: Valid targets
+```
 
-### Card Types and States
+## Core Game Concepts
 
-#### Card Model
-Cards can be of three types:
-- PERSON
-- EVENT
-- CAMP
+Ladlands is a two-player card game where players manage:
+- Water (primary resource)
+- Cards (in hand, battlefield, and various decks)
+- Abilities (on battlefield cards and through discarding)
 
-Special characteristics:
-- Person and Event cards are considered "Punk" cards when:
-  - They are in the Punk deck
-  - They are face-down on the battlefield
-- Camp cards flip over in place when destroyed
-- Punk cards return to the Punk deck when damaged
+## System Architecture
+
+### Game State & Board Structure
+- Each game has two players (identified as A and One)
+- Each player has:
+  - A game board with 14 spaces:
+    - 9 battlefield spaces (3x3 grid)
+    - 3 event spaces
+    - 2 permanent card spaces
+  - Water resources
+  - Hand of cards
+  - Input requests queue
+
+### Card System
+
+#### Card Types
+- People: Combat units with abilities
+- Camps: Support structures that can be damaged/destroyed
+- Events: Queue-based effects
+- Perma: Special cards (Raiders, Water Silo) in dedicated spaces
+
+#### Card States
+- Damaged/Undamaged
+- Ready/Not Ready
+- Protected/Unprotected (based on board position)
+- Regular/Punk (special state for certain cards)
+
+### Core Services
+
+#### GameStateService
+Central orchestrator that:
+- Manages game flow and turn structure
+- Validates and executes player actions
+- Tracks card states and locations
+- Handles ability activation
+
+#### GameStateChangeService
+Handles atomic state changes:
+- Card movement between zones
+- Damage application
+- Resource management
+- Card state modifications
+
+#### TargetResolver
+Determines valid targets for abilities based on:
+- Card location
+- Protection status
+- Card type
+- Current game state
 
 ### Effect System
 
-#### Effect Interface
-All game actions that modify the game state implement the `Effect` interface:
-```php
-interface Effect {
-    public function getEffectKey(): string;
-    public function getSerializedParameters(): array;
-    public function apply(GameStateChangeService $stateService, Collection $targets = null): void;
-    public function getValidTargetTypes(): array;
-    public function getRequiredTargetCount(): int;
-}
-```
+Effects are the fundamental unit of game actions:
 
-#### Effect Registry
-The `EffectRegistry` maintains a list of all available effects and handles their instantiation when needed. This is particularly important for reconstructing effects from serialized PlayerInputRequests.
+- InputDependentEffect: Requires player targeting
+- ApplyToPlayerImmediatelyEffect: Auto-resolves
+- CreatesRequestForOpponent: Generates opponent input requests
+
+Each effect defines:
+- Valid target types
+- Resolution logic
+- State changes
 
 ### Ability System
 
-#### Card Abilities
-Cards can have two types of abilities:
-1. CardAbilities - activated while on the battlefield
-2. JunkAbilities - activated by discarding the card from hand
-
-Both ability types ultimately trigger Effects to modify the game state.
-
-### State Change Management
-
-#### GameStateChangeService
-Central service that handles all modifications to the game state. Key responsibilities:
-- Damage application
-- Card movement between locations
-- Water resource management
-- Card state changes (face-down, damaged, flipped)
-
-Example of damage handling:
-```php
-public function damageCard(Card $card): void {
-    if ($card->isDamaged()) {
-        $this->destroyCard($card);
-    } else {
-        $card->setDamaged(true);
-        if ($card->isPunk()) {
-            $this->sendCardToPunkDeck($card);
-        }
-    }
-}
-```
+Cards can have abilities that:
+- Require water cost
+- Target specific card types
+- Apply effects
+- Have availability rules
 
 ### Player Input System
 
-#### PlayerInputRequest
-When an Effect requires targeting, a `PlayerInputRequest` is created and stored in the database. This handles the asynchronous nature of player decisions.
+Handles asynchronous player decisions through:
+- Input requests queue
+- Target validation
+- Effect resolution
 
-Flow:
-1. Ability activation -> Effect needs target
-2. PlayerInputRequest created with valid targets
-3. Player selects targets (async)
-4. Effect is reconstructed and applied
+## API Endpoints
 
-## API Layer
-
-### Controllers
-
-#### AbilityController
-Handles endpoints for:
-- Activating card abilities
-- Using junk abilities
-
-```php
-POST /api/games/{gameState}/cards/{card}/activate-ability
-POST /api/games/{gameState}/cards/{card}/junk
+### Game Management
+```
+GET  /api/games
+POST /api/game
+GET  /api/game/{game}/state
 ```
 
-#### PlayerInputController
-Handles resolution of player input requests:
-```php
-POST /api/player-input/{playerInputRequest}
-GET /api/player-input/{playerInputRequest}/cancel
+### Game Actions
+```
+GET  /api/game/{game}/concede
+GET  /api/game/{game}/end-current-turn
+GET  /api/game/{game}/pay-to-draw
+POST /api/game/{game}/play-person-at-camp-slot 
+POST /api/game/{game}/add-event-to-queue
 ```
 
-## Common Workflows
-
-### 1. Playing a Card to Battlefield
-```mermaid
-sequenceDiagram
-    Client->>AbilityController: POST /play-card
-    AbilityController->>GameStateChangeService: playCard()
-    GameStateChangeService->>CardLocationManager: moveCard()
-    CardLocationManager->>CardLocation: create()
+### Ability & Input Handling
+```
+POST /api/game/{game}/{gameCard}/trigger-ability
+POST /api/player-input-request/{playerInputRequest}
+GET  /api/player-input-request/{playerInputRequest}/cancel
+POST /api/player-input-request/{playerInputRequest}/choose-option
 ```
 
-### 2. Activating a Targeted Ability
-```mermaid
-sequenceDiagram
-    Client->>AbilityController: POST /activate-ability (Pay 1 water to damage unprotected enemy)
-    AbilityController->>PlayerInputRequest: create() (Ask the player to choose from a set of targets)
-    Client->>PlayerInputRequestController: POST / (The player responds with their choices)
-    PlayerInputRequestController->>EffectRegistry: getEffect() (Retrieve the designated Effect for the initial Ability)
-    EffectRegistry->>Effect: apply() (Individual Effect implementation)
-    Effect->>GameStateChangeService: damageCard() (The StateChange method to call is deteremined by the Effect)
-```
+## Testing Strategy
 
-## State Views and Visibility
+The system uses comprehensive test suites:
 
-The `GameStateService` generates player-specific views of the game state:
-- Players see their own hands but only opponent's hand size
-- All battlefield cards are visible (unless face-down)
-- Deck sizes are visible to both players
+### Unit Tests
+- Card ability resolution
+- Target validation
+- Effect application
+- Game state changes
 
-## Testing
+### Feature Tests
+- API endpoint validation
+- Game flow integration
+- State synchronization
+- Player interactions
 
-The system includes several test suites:
-- Unit tests for individual services
-- Integration tests for effect resolution
-- API tests for controller endpoints
-- Feature tests for complete game workflows
+### Test Helpers
+GameTestHelper trait provides:
+- Standard game setup
+- Board initialization
+- Card placement utilities
 
-## Key Design Benefits
+## Key Design Principles
 
-1. **Clear Separation of Concerns**
-   - Effects define what can happen
-   - GameStateService controls how it happens
-   - CardLocationManager ensures valid card movements
-   - PlayerInputRequests handle async decisions
+1. Separation of Concerns
+   - State management isolated from game logic
+   - Effects separate from ability definitions
+   - Clear service boundaries
 
-2. **Type Safety and Validation**
-   - Strong typing throughout the system
-   - Validation at both service and database levels
-   - Clear boundaries between components
+2. Immutable Game State
+   - All changes through GameStateChangeService
+   - Transaction-based state updates
+   - Comprehensive state validation
 
-3. **Extensibility**
-   - New effects just implement Effect interface
-   - Location system can handle new zones
-   - Ability system can be extended for new types
-
-4. **Auditability**
-   - All card movements tracked with timestamps
-   - Clear history of game state changes
-   - Player input requests preserved
+3. Extensibility
+   - Modular effect system
+   - Pluggable ability framework
+   - Flexible targeting rules
