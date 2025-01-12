@@ -18,6 +18,9 @@ class GameStateChangeService {
     public function startTurnForPlayer(GameStateService $state, Player $player){
         $state->game->update(['current_player_id' => $player->id]);
         $player->update(['water' => 3]);
+        $state->game->turns()->create([
+            'turn_number' => $state->game->turns()->count()
+        ]);
     }
 
     public function damageCard(Card $card){

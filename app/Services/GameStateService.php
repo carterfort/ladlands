@@ -40,6 +40,7 @@ class GameStateService
         $this->stateChanger->startTurnForPlayer($this, $this->game->currentPlayer->getOpponent());
 
         $eventQueueSpaces = $this->game->currentPlayer->board->spaces()->type('EVENT')->pluck('id');
+
         
         $this->getGameCardsQuery()
             ->where('location->type', 'event_queue')
@@ -255,7 +256,7 @@ class GameStateService
     }
 
     public function cardHasUsedAbilityThisTurn(Card $card, Ability $ability){
-        
+
     }
 
 }
